@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════════════════════
+  LA MANADA — Guía de Arranque Rápido
+  DEVBU93 - rubenrodriguez.f.93@gmail.com
+═══════════════════════════════════════════════════════════════════
+
+ANTES DE EMPEZAR — Instala esto (una sola vez):
+
+  1. Docker Desktop   → https://www.docker.com/products/docker-desktop
+  2. Node.js 22 LTS   → https://nodejs.org
+  3. .NET 8 SDK       → https://dotnet.microsoft.com/download/dotnet/8.0
+                        (solo para World-MOS)
+
+TAMBIÉN NECESITAS (una sola vez):
+  npm install -g dotnet-ef    (para World-MOS: migraciones)
+
+───────────────────────────────────────────────────────────────────
+
+CÓMO USAR:
+
+  ▶ Para arrancar TODO de una vez:
+    → Doble clic en:  ARRANCAR_TODO.bat
+    (abre 6 ventanas de consola + 3 navegadores automáticamente)
+
+  ▶ Para arrancar solo un proyecto:
+    → DevbuPlaytime:  ARRANCAR_DevbuPlaytime.bat
+    → AguaFlow:       ARRANCAR_AguaFlow.bat
+    → World-MOS:      ARRANCAR_WorldMOS.bat
+
+  ■ Para parar todo:
+    → Doble clic en:  PARAR_TODO.bat
+
+───────────────────────────────────────────────────────────────────
+
+URLS DE ACCESO UNA VEZ ARRANCADO:
+
+  🎮 DevbuPlaytime
+     App:     http://localhost:5173
+     API:     http://localhost:3001
+     Swagger: http://localhost:3001/api-docs
+     Admin:   admin@devbuplaytime.com / Admin123!
+     Demo:    demo@devbuplaytime.com / User123!
+
+  🌊 AguaFlow
+     App:     http://localhost:5174
+     API:     http://localhost:3002
+
+  🌐 World-MOS
+     App:     http://localhost:5175
+     API:     http://localhost:5000
+     Swagger: http://localhost:5000/swagger
+     Admin:   admin@world-mos.com / Admin123!
+
+───────────────────────────────────────────────────────────────────
+
+PRIMERA VEZ — Configurar rutas en ARRANCAR_TODO.bat:
+
+  Edita las líneas 28-30 del archivo ARRANCAR_TODO.bat
+  y pon las rutas donde tienes clonados los repos:
+
+  set "DEVBU_PATH=C:\ruta\a\Nebuchadnezzar_DevbuPlayTime"
+  set "AGUAFLOW_PATH=C:\ruta\a\AguaFlow"
+  set "WORLDMOS_PATH=C:\ruta\a\World-MOS"
+
+  Para clonar los repos (en PowerShell o CMD):
+  git clone https://github.com/DEVBU93/Nebuchadnezzar_DevbuPlayTime
+  git clone https://github.com/DEVBU93/AguaFlow
+  git clone https://github.com/DEVBU93/World-MOS
+
+═══════════════════════════════════════════════════════════════════
