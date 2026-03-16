@@ -3,25 +3,25 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 
 import { useAuthStore } from './stores/authStore';
-import MainLayout from './layouts/MainLayout';
-import AuthLayout from './layouts/AuthLayout';
+import { MainLayout } from './layouts/MainLayout';
+import { AuthLayout } from './layouts/AuthLayout';
 
 // ─── Pages ───────────────────────────────────────────────────────────────────
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import HomePage from './pages/home/HomePage';
-import WorldsPage from './pages/worlds/WorldsPage';
-import WorldDetailPage from './pages/worlds/WorldDetailPage';
-import ChaptersPage from './pages/chapters/ChaptersPage';
-import MissionPage from './pages/missions/MissionPage';
-import QuizPage from './pages/quiz/QuizPage';
-import ArenaPage from './pages/arena/ArenaPage';
-import ArenaRoomPage from './pages/arena/ArenaRoomPage';
-import ProfilePage from './pages/profile/ProfilePage';
-import ShopPage from './pages/shop/ShopPage';
-import LeaderboardPage from './pages/leaderboard/LeaderboardPage';
-import AchievementsPage from './pages/achievements/AchievementsPage';
-import NotFoundPage from './pages/NotFoundPage';
+import { LoginPage } from './pages/auth/LoginPage';
+import { RegisterPage } from './pages/auth/RegisterPage';
+import { HomePage } from './pages/home/HomePage';
+import { WorldsPage } from './pages/worlds/WorldsPage';
+import { WorldDetailPage } from './pages/worlds/WorldDetailPage';
+import { ChaptersPage } from './pages/chapters/ChaptersPage';
+import { MissionPage } from './pages/missions/MissionPage';
+import { QuizPage } from './pages/quiz/QuizPage';
+import { ArenaPage } from './pages/arena/ArenaPage';
+import { ArenaRoomPage } from './pages/arena/ArenaRoomPage';
+import { ProfilePage } from './pages/profile/ProfilePage';
+import { ShopPage } from './pages/shop/ShopPage';
+import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
+import { AchievementsPage } from './pages/achievements/AchievementsPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
