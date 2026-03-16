@@ -7,21 +7,21 @@ import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 
 // ─── Pages ───────────────────────────────────────────────────────────────────
-import { LoginPage } from './pages/auth/LoginPage';
-import { RegisterPage } from './pages/auth/RegisterPage';
-import { HomePage } from './pages/home/HomePage';
-import { WorldsPage } from './pages/worlds/WorldsPage';
-import { WorldDetailPage } from './pages/worlds/WorldDetailPage';
-import { ChaptersPage } from './pages/chapters/ChaptersPage';
-import { MissionPage } from './pages/missions/MissionPage';
-import { QuizPage } from './pages/quiz/QuizPage';
-import { ArenaPage } from './pages/arena/ArenaPage';
-import { ArenaRoomPage } from './pages/arena/ArenaRoomPage';
-import { ProfilePage } from './pages/profile/ProfilePage';
-import { ShopPage } from './pages/shop/ShopPage';
-import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
-import { AchievementsPage } from './pages/achievements/AchievementsPage';
-import { NotFoundPage } from './pages/NotFoundPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import HomePage from './pages/home/HomePage';
+import WorldsPage from './pages/worlds/WorldsPage';
+import WorldDetailPage from './pages/worlds/WorldDetailPage';
+import ChaptersPage from './pages/chapters/ChaptersPage';
+import MissionPage from './pages/missions/MissionPage';
+import QuizPage from './pages/quiz/QuizPage';
+import ArenaPage from './pages/arena/ArenaPage';
+import ArenaRoomPage from './pages/arena/ArenaRoomPage';
+import ProfilePage from './pages/profile/ProfilePage';
+import ShopPage from './pages/shop/ShopPage';
+import LeaderboardPage from './pages/leaderboard/LeaderboardPage';
+import AchievementsPage from './pages/achievements/AchievementsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,7 +32,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// ─── Protected Route ────────────────────────────────────────────────────────
+// ─── Protected Route ──────────────────────────────────────────────────────────
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -58,23 +58,22 @@ export default function App() {
 
           {/* ─── Main App ─── */}
           <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<HomePage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/worlds" element={<WorldsPage />} />
 
             {/* Mundos y Progreso */}
-            <Route path="/worlds" element={<WorldsPage />} />
             <Route path="/worlds/:worldId" element={<WorldDetailPage />} />
             <Route path="/worlds/:worldId/chapters" element={<ChaptersPage />} />
-            <Route path="/worlds/:worldId/chapters/:chapterId/missions/:missionId" element={<MissionPage />} />
+            <Route path="/worlds/:worldId/chapters/:chapterId/missions" element={<MissionPage />} />
+            <Route path="/worlds/:worldId/chapters/:chapterId/missions/:missionId/quiz" element={<QuizPage />} />
 
             {/* Quiz y Arena */}
-            <Route path="/quiz/:missionId" element={<QuizPage />} />
+            <Route path="/quiz" element={<QuizPage />} />
             <Route path="/arena" element={<ArenaPage />} />
-            <Route path="/arena/:roomCode" element={<ArenaRoomPage />} />
+            <Route path="/arena/:roomId" element={<ArenaRoomPage />} />
 
             {/* Perfil y Social */}
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/achievements" element={<AchievementsPage />} />
