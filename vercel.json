@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend-web && npm install --legacy-peer-deps && npm run build",
+  "buildCommand": "cd frontend-web && npm install --legacy-peer-deps --include=dev && npm run build",
   "outputDirectory": "frontend-web/dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
