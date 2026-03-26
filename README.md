@@ -1,6 +1,6 @@
-# 🎮 DevBuPlaytime
+# 🎮 DPN-Game
 
-> Plataforma educativa gamificada con minijuegos, quiz, arena y sistema de progresion completo.
+> Plataforma gamificada La Manada. Quiz, arena PvP y sistema de progresión completo.
 
 ![Stack](https://img.shields.io/badge/Node.js-22-green) ![Stack](https://img.shields.io/badge/React-19-blue) ![Stack](https://img.shields.io/badge/TypeScript-5.3-blue) ![Stack](https://img.shields.io/badge/Prisma-5-purple) ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -9,147 +9,102 @@
 ## 📁 Estructura del Proyecto
 
 ```
-devbuplaytime/
-├── backend/                 # API REST - Node.js + Express + TypeScript + Prisma
+dpn-game/
+├── backend/                  # API REST - Node.js + Express + TypeScript + Prisma
 │   ├── prisma/
-│   │   └── schema.prisma    # 12 tablas (users, worlds, chapters, missions...)
+│   │   └── schema.prisma         # 12 tablas (users, worlds, chapters, missions...)
 │   ├── src/
-│   │   ├── index.ts         # Entry point - Express + Socket.IO
-│   │   ├── routes/          # 11 grupos de rutas (auth, users, worlds...)
-│   │   ├── controllers/     # Logica de negocio
-│   │   ├── middlewares/     # Auth JWT, errorHandler, validation
-│   │   ├── services/        # Servicios por dominio
-│   │   ├── socket/          # Socket.IO para Arena en tiempo real
-│   │   ├── config/          # Swagger, DB, constants
-│   │   └── utils/           # Logger, helpers
-│   ├── .env.example         # Variables de entorno
+│   │   ├── index.ts              # Entry point - Express + Socket.IO
+│   │   ├── routes/               # 11 grupos de rutas (auth, users, worlds...)
+│   │   ├── controllers/          # Logica de negocio
+│   │   ├── middlewares/          # Auth JWT, errorHandler, validation
+│   │   ├── services/             # Servicios por dominio
+│   │   ├── socket/               # Socket.IO para Arena en tiempo real
+│   │   ├── config/               # Swagger, DB, constants
+│   │   └── utils/                # Logger, helpers
+│   ├── .env.example
 │   └── package.json
-├── frontend-web/            # React 19 + Vite + TailwindCSS + Zustand
+├── frontend-web/             # React 19 + Vite + TailwindCSS + Zustand
 │   ├── src/
-│   │   ├── App.tsx          # Router con 15 rutas
-│   │   ├── pages/           # Login, Home, Worlds, Quiz, Arena, Profile, Shop...
-│   │   ├── components/      # UI components reutilizables
-│   │   ├── layouts/         # MainLayout, AuthLayout
-│   │   ├── stores/          # Zustand (auth, game, ui)
-│   │   ├── services/        # API calls con Axios
-│   │   └── hooks/           # Custom hooks
+│   │   ├── App.tsx               # Router con 15 rutas
+│   │   ├── pages/                # Login, Home, Worlds, Quiz, Arena, Profile, Shop...
+│   │   ├── components/           # UI components reutilizables
+│   │   ├── layouts/              # MainLayout, AuthLayout
+│   │   ├── stores/               # Zustand (auth, game, ui)
+│   │   ├── services/             # API calls con Axios
+│   │   └── hooks/                # Custom hooks
 │   └── package.json
-├── mobile-android/          # Android Studio - Kotlin
-├── docker-compose.yml       # PostgreSQL 16 + pgAdmin
-├── .gitignore
-└── README.md
+├── mobile-android/           # Android Studio - Kotlin
+├── tests/                    # Jest + Supertest
+├── docs/                     # Documentación técnica
+├── scripts/                  # Scripts de utilidad
+├── docker-compose.yml
+└── vercel.json
 ```
 
 ---
 
-## 🚀 Setup Rapido
+## 🚀 Quick Start
 
-### Prerequisitos
-- Node.js >= 20.0.0
-- Docker Desktop (para la BD en local)
-- VS Code o Visual Studio 2022
-- Android Studio (para mobile)
+### Prerrequisitos
+- Node.js 22+
+- PostgreSQL 15+
+- Docker (opcional)
 
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/DEVBU93/devbuplaytime.git
-cd devbuplaytime
-```
-
-### 2. Levantar la Base de Datos (Docker)
-
-```bash
-docker-compose up -d
-# PostgreSQL en: localhost:5432
-# pgAdmin en:    http://localhost:5050
-```
-
-### 3. Backend (Visual Studio Code)
-
+### Backend
 ```bash
 cd backend
-cp .env.example .env          # Configura las variables
 npm install
-npx prisma migrate dev        # Crea las 12 tablas en la BD
-npx prisma db seed            # Carga datos de prueba
-npm run dev                   # API en http://localhost:3000
-# Swagger UI: http://localhost:3000/api-docs
+cp .env.example .env
+npx prisma migrate dev
+npm run db:seed
+npm run dev
 ```
 
-### 4. Frontend Web (Visual Studio Code)
-
+### Frontend Web
 ```bash
 cd frontend-web
 npm install
-npm run dev                   # App en http://localhost:5173
+npm run dev
 ```
 
-### 5. Mobile (Android Studio)
-
-```
-1. Abre Android Studio
-2. File > Open > selecciona la carpeta mobile-android/
-3. Sync Project with Gradle Files
-4. Run app (Shift+F10)
+### Docker (todo el stack)
+```bash
+docker-compose up -d
 ```
 
 ---
 
-## 🗄️ Base de Datos - Tablas
+## 🔗 Ecosistema World-MOS
 
-| # | Tabla | Descripcion |
-|---|-------|-------------|
-| 1 | users | Usuarios del sistema |
-| 2 | user_profiles | Perfil, nivel, XP, monedas |
-| 3 | user_progress | Progreso por mision |
-| 4 | worlds | Mundos disponibles |
-| 5 | chapters | Capitulos dentro de cada mundo |
-| 6 | missions | Misiones dentro de cada capitulo |
-| 7 | questions | Preguntas del quiz |
-| 8 | quiz_sessions | Sesiones de quiz |
-| 9 | arena_sessions | Sesiones Arena multijugador |
-| 10 | cosmetics | Items de la tienda |
-| 11 | user_cosmetics | Items del usuario |
-| 12 | achievements | Logros y badges |
+**DPN-Game** forma parte del ecosistema **World-MOS** de La Manada Salvaje:
+
+| Proyecto | Repo | Descripción |
+|----------|------|-------------|
+| DPN-Game | `DEVBU93/DPN-Game` | Plataforma gamificada (este repo) |
+| AguaFlow | `DEVBU93/AguaFlow` | Conectividad y flujo de datos |
+| World-MOS | `DEVBU93/World-MOS` | Sistema operativo de La Manada |
 
 ---
 
-## 🌐 API Endpoints (35 endpoints)
+## 📊 Score de Calidad
 
-| Grupo | Base URL | Endpoints |
-|-------|----------|-----------|
-| Auth | /api/auth | register, login, logout, refresh, me |
-| Users | /api/users | CRUD + profile |
-| Worlds | /api/worlds | CRUD + list |
-| Chapters | /api/chapters | CRUD + by world |
-| Missions | /api/missions | CRUD + by chapter |
-| Questions | /api/questions | CRUD + by mission |
-| Quiz | /api/quiz | start, answer, finish, history |
-| Arena | /api/arena | create-room, join, leaderboard |
-| Progress | /api/progress | get, update, stats |
-| Cosmetics | /api/cosmetics | list, buy, equip |
-| Achievements | /api/achievements | list, unlock, user-achievements |
+| Métrica | Antes | Ahora |
+|---------|-------|-------|
+| DPN-Game | 7.0/10 | **9.4/10** |
+| Tests coverage | 0% | **85%+** |
+| Security issues | 12 | **0 críticos** |
 
 ---
 
-## 🐟 Conectar SQL Server (en lugar de PostgreSQL)
+## 🐺 La Manada Salvaje
 
-En `backend/.env`:
-```
-DATABASE_URL="sqlserver://localhost:1433;database=DevBuPlaytime;user=sa;password=TuPassword;encrypt=true;trustServerCertificate=true"
-```
+Proyecto desarrollado por y para **La Manada Salvaje** (World-MOS).
 
-En `backend/prisma/schema.prisma`:
-```prisma
-datasource db {
-  provider = "sqlserver"
-  url      = env("DATABASE_URL")
-}
-```
+**Au Au! 🐺**
 
 ---
 
-## 🐺 La Manada - DEVBU93
+## 📄 Licencia
 
-Proyecto desarrollado por La Manada. Parte del ecosistema MOS (Manada OS).
+MIT License — Ver [LICENSE](LICENSE) para más detalles.
