@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DPN_GAME — Visual Guide v3</title>
+<style>
+  :root {
+    --bg: #0a0a1e; --card: #12122e; --accent: #6C5CE7;
+    --green: #00B894; --orange: #F0A500; --pink: #FD79A8;
+    --cyan: #4ECDC4; --red: #E17055; --blue: #74B9FF;
+    --text: #e8e8f0; --sub: #a0a0c0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',Arial,sans-serif; }
+
+  /* NAV */
+  nav { background:rgba(10,10,30,0.97); border-bottom:1px solid var(--accent);
+        padding:12px 24px; display:flex; align-items:center; gap:20px;
+        position:sticky; top:0; z-index:100; flex-wrap:wrap; }
+  nav .logo { font-size:1.3rem; font-weight:900; color:var(--accent);
+               letter-spacing:2px; text-shadow:0 0 12px var(--accent); }
+  nav a { color:var(--sub); text-decoration:none; font-size:.85rem;
+          padding:5px 12px; border-radius:20px; transition:.2s; }
+  nav a:hover { background:var(--accent); color:white; }
+
+  /* HERO */
+  .hero { text-align:center; padding:60px 20px 40px;
+          background:radial-gradient(ellipse at 50% 0%, rgba(108,92,231,.18) 0%, transparent 70%); }
+  .hero h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:900;
+              background:linear-gradient(135deg,var(--accent),var(--cyan),var(--pink));
+              -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p { color:var(--sub); font-size:1.1rem; margin-top:12px; max-width:700px; margin-inline:auto; }
+  .badge-row { display:flex; justify-content:center; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .badge { background:rgba(108,92,231,.2); border:1px solid var(--accent);
+           padding:6px 16px; border-radius:30px; font-size:.8rem; color:var(--cyan); }
+
+  /* SECTION */
+  section { padding:40px 20px; max-width:1200px; margin:0 auto; }
+  h2.sec-title { font-size:1.6rem; font-weight:800; color:var(--accent);
+                 margin-bottom:24px; display:flex; align-items:center; gap:10px; }
+  h2.sec-title::after { content:''; flex:1; height:1px; background:rgba(108,92,231,.3); }
+
+  /* GRID CARDS */
+  .grid { display:grid; gap:16px; }
+  .g3 { grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
+  .g4 { grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
+  .g2 { grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); }
+
+  .card { background:var(--card); border-radius:14px; padding:20px;
+          border:1px solid rgba(255,255,255,.07); transition:.25s;
+          position:relative; overflow:hidden; }
+  .card:hover { transform:translateY(-3px); border-color:var(--accent);
+                box-shadow:0 8px 32px rgba(108,92,231,.25); }
+  .card .icon { font-size:2rem; margin-bottom:10px; }
+  .card h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:6px; }
+  .card p { font-size:.82rem; color:var(--sub); line-height:1.55; }
+  .card .tag { position:absolute; top:12px; right:12px; font-size:.7rem;
+               padding:3px 10px; border-radius:20px; font-weight:700; }
+  .tag-green { background:rgba(0,184,148,.2); color:var(--green); }
+  .tag-orange { background:rgba(240,165,0,.2); color:var(--orange); }
+  .tag-pink { background:rgba(253,121,168,.2); color:var(--pink); }
+  .tag-blue { background:rgba(116,185,255,.2); color:var(--blue); }
+  .tag-red { background:rgba(225,112,85,.2); color:var(--red); }
+
+  /* SCREEN MOCKUP */
+  .mockup { background:#0d0d22; border:1px solid rgba(108,92,231,.4);
+            border-radius:16px; padding:16px; }
+  .mockup .bar { background:rgba(108,92,231,.15); border-radius:8px;
+                 padding:8px 12px; margin-bottom:10px; font-size:.75rem; color:var(--accent); font-weight:700; }
+  .mockup .row { display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+  .btn-mock { background:var(--accent); color:white; border:none; border-radius:8px;
+              padding:7px 16px; font-size:.78rem; cursor:default; font-weight:600; }
+  .btn-ghost { background:transparent; border:1px solid var(--accent); color:var(--accent);
+               border-radius:8px; padding:7px 16px; font-size:.78rem; cursor:default; }
+  .field { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+           border-radius:8px; padding:7px 12px; font-size:.78rem; color:var(--sub);
+           min-width:120px; }
+  .xp-bar { height:8px; background:rgba(255,255,255,.1); border-radius:4px; margin:8px 0; overflow:hidden; }
+  .xp-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--accent),var(--cyan)); }
+  .avatar-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center;
+            justify-content:center; font-size:1.1rem; border:2px solid var(--accent); }
+
+  /* RANGOS */
+  .rango-row { display:flex; gap:10px; align-items:center; padding:10px;
+               border-radius:10px; background:rgba(255,255,255,.03);
+               border:1px solid rgba(255,255,255,.06); margin-bottom:8px; }
+  .rango-icon { font-size:1.6rem; width:42px; text-align:center; }
+  .rango-info { flex:1; }
+  .rango-info .name { font-weight:700; font-size:.9rem; }
+  .rango-info .xp { font-size:.75rem; color:var(--sub); }
+  .rango-bar { width:80px; height:6px; border-radius:3px; background:rgba(255,255,255,.1); overflow:hidden; }
+  .rango-bar-fill { height:100%; border-radius:3px; }
+
+  /* ENDPOINTS */
+  .ep { display:flex; gap:10px; align-items:center; padding:8px 12px;
+        border-radius:8px; background:rgba(255,255,255,.03);
+        border-left:3px solid; margin-bottom:6px; font-size:.82rem; }
+  .ep.get { border-color:var(--green); }
+  .ep.post { border-color:var(--orange); }
+  .ep.put { border-color:var(--blue); }
+  .ep.del { border-color:var(--red); }
+  .method { font-weight:800; font-size:.72rem; padding:2px 7px; border-radius:4px; min-width:42px; text-align:center; }
+  .m-get { background:rgba(0,184,148,.2); color:var(--green); }
+  .m-post { background:rgba(240,165,0,.2); color:var(--orange); }
+  .m-put { background:rgba(116,185,255,.2); color:var(--blue); }
+  .m-del { background:rgba(225,112,85,.2); color:var(--red); }
+  .ep-path { color:var(--text); flex:1; font-family:monospace; }
+  .ep-desc { color:var(--sub); font-size:.75rem; }
+
+  /* STACK */
+  .stack-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .tech { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+          border-radius:10px; padding:10px 16px; font-size:.85rem; font-weight:600;
+          display:flex; align-items:center; gap:8px; }
+
+  /* TIMELINE */
+  .timeline { position:relative; padding-left:28px; }
+  .timeline::before { content:''; position:absolute; left:10px; top:0; bottom:0;
+                       width:2px; background:rgba(108,92,231,.3); }
+  .tl-item { position:relative; margin-bottom:20px; }
+  .tl-item::before { content:''; position:absolute; left:-22px; top:6px;
+                      width:10px; height:10px; border-radius:50%; background:var(--accent); }
+  .tl-item h4 { font-size:.9rem; font-weight:700; color:var(--cyan); }
+  .tl-item p { font-size:.8rem; color:var(--sub); margin-top:4px; }
+
+  /* ROCE METER */
+  .roce-meter { background:var(--card); border-radius:14px; padding:20px;
+                border:1px solid rgba(0,184,148,.3); }
+  .roce-val { font-size:3rem; font-weight:900; color:var(--green);
+              text-shadow:0 0 20px rgba(0,184,148,.5); }
+  .roce-label { color:var(--sub); font-size:.85rem; margin-top:4px; }
+  .roce-bar { height:12px; background:rgba(255,255,255,.07); border-radius:6px;
+              margin:12px 0; overflow:hidden; }
+  .roce-fill { height:100%; border-radius:6px;
+               background:linear-gradient(90deg,var(--green),var(--orange),var(--pink)); }
+
+  /* FOOTER */
+  footer { text-align:center; padding:30px; color:var(--sub); font-size:.8rem;
+           border-top:1px solid rgba(255,255,255,.07); margin-top:40px; }
+  footer strong { color:var(--accent); }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">🎮 DPN_GAME</span>
+  <a href="#vision">Visión</a>
+  <a href="#modulos">Módulos</a>
+  <a href="#pantallas">Pantallas</a>
+  <a href="#api">API</a>
+  <a href="#stack">Stack</a>
+  <a href="#rangos">Rangos</a>
+  <a href="#roadmap">Roadmap</a>
+  <a href="#roce">ROCE-H</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>DevBuPlaytime — DPN_GAME</h1>
+  <p>Plataforma edu-gamificada Matrix-themed. Quiz + Arena TD + Racing + Comunidad.<br>
+     Tarragona · Manada Salvaje · Orquestador: Rubén (DEVBU 2.0) · Lob@-Pulpo</p>
+  <div class="badge-row">
+    <span class="badge">18 Pantallas</span>
+    <span class="badge">42 Endpoints</span>
+    <span class="badge">22 Colecciones BD</span>
+    <span class="badge">7 Semanas MVP</span>
+    <span class="badge">React 18 · Node · Prisma · PostgreSQL</span>
+    <span class="badge">MASTER v3 · Abril 2026</span>
+  </div>
+</div>
+
+<!-- VISIÓN -->
+<section id="vision">
+  <h2 class="sec-title">🌍 Visión & Ecosistema</h2>
+  <div class="grid g3">
+    <div class="card">
+      <div class="icon">🎓</div>
+      <h3>Aprendizaje Real</h3>
+      <p>Quiz multi-modo (Clásico, Supervivencia, Duelo, Manada, Matrix). 8 preguntas/sesión, 3 vidas, mínimo 70% para pasar.</p>
+      <span class="tag tag-green">CORE</span>
+    </div>
+    <div class="card">
+      <div class="icon">🏰</div>
+      <h3>Arena Tower Defense</h3>
+      <p>Grid 3×5. Torres Archer/Mage/Paladin. 10 oleadas. Enemigos: Agente Básico, Centinela, Agente Smith (boss).</p>
+      <span class="tag tag-orange">COMBATE</span>
+    </div>
+    <div class="card">
+      <div class="icon">🚗</div>
+      <h3>BubaTronik Race</h3>
+      <p>Arcade racer. 8 pistas (Rambla Nova, Matrix Highway, Cueva Underground…). 5 vehículos únicos con power-ups quiz.</p>
+      <span class="tag tag-pink">RACING</span>
+    </div>
+    <div class="card">
+      <div class="icon">🐺</div>
+      <h3>La Manada / Cueva</h3>
+      <p>Hub social: Hoguera chat, tablón misiones, biblioteca, ritual diario. Sistema de roles Cachorro → Guardián.</p>
+      <span class="tag tag-blue">COMUNIDAD</span>
+    </div>
+    <div class="card">
+      <div class="icon">🚀</div>
+      <h3>Nebuchadnezzar</h3>
+      <p>Nave metaverso / fase VR-AR avanzada. Misiones especiales, Construct Room (entrenamiento), WebXR + Three.js.</p>
+      <span class="tag tag-red">META</span>
+    </div>
+    <div class="card">
+      <div class="icon">💧</div>
+      <h3>WorldMOS + AguaFlow</h3>
+      <p>Sistema operativo mayor que une DPN_GAME, AguaFlow (recursos educativos) y ManadaOS en un único ecosistema.</p>
+      <span class="tag tag-blue">OS</span>
+    </div>
+  </div>
+</section>
+
+<!-- MÓDULOS JUGABLES -->
+<section id="modulos">
+  <h2 class="sec-title">🎲 Módulos de Juego</h2>
+  <div class="grid g2">
+    <div class="card mockup">
+      <div class="bar">⚡ QUIZ ENGINE — Modo Duelo</div>
+      <div class="avatar-row" style="margin-bottom:12px;">
+        <div class="avatar">🐺</div><span style="font-size:.85rem;">DEVBU_2.0 <span style="color:var(--green)">Rng.5</span></span>
+        <span style="margin-left:auto;font-size:.85rem;color:var(--orange)">VS</span>
+        <div class="avatar" style="border-color:var(--pink);">🐱</div><span style="font-size:.85rem;">Jugador_X</span>
+      </div>
+      <div class="bar" style="background:rgba(240,165,0,.1);color:var(--orange);">❓ Pregunta 4/8 · ⏱ 12s restantes</div>
+      <p style="font-size:.83rem;margin:10px 0;">¿Qué protocolo usa TorMesh para comunicaciones descentralizadas?</p>
+      <div class="row">
+        <button class="btn-mock">A) Onion routing</button>
+        <button class="btn-ghost">B) HTTP/3</button>
+        <button class="btn-ghost">C) WebSocket</button>
+        <button class="btn-ghost">D) gRPC</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px;font-size:.78rem;">
+        <span style="color:var(--green)">❤️❤️❤️ Vidas: 3</span>
+        <span style="color:var(--orange)">🔥 Racha: 3</span>
+        <span style="color:var(--cyan)">⭐ XP: +45</span>
+      </div>
+    </div>
+
+    <div class="card mockup">
+      <div class="bar">🏰 ARENA TD — Oleada 7/10</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:10px 0;">
+        <div style="background:rgba(108,92,231,.3);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">🏹</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+        <div style="background:rgba(0,184,148,.25);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">🧙</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+        <div style="background:rgba(240,165,0,.25);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">⚔️</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+        <div style="background:rgba(225,112,85,.3);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">👾</div>
+        <div style="background:rgba(225,112,85,.3);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">👾</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+        <div style="background:rgba(255,0,0,.2);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">💀</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+        <div style="background:rgba(108,92,231,.3);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">🏹</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+        <div style="background:rgba(0,184,148,.25);border-radius:5px;padding:8px;text-align:center;font-size:1.1rem;">🧙</div>
+        <div style="background:rgba(255,255,255,.05);border-radius:5px;padding:8px;text-align:center;font-size:.7rem;color:var(--sub)">·</div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:.78rem;">
+        <span style="color:var(--green)">❤️ HP: 4/5</span>
+        <span style="color:var(--orange)">💰 TM: 340</span>
+        <span style="color:var(--cyan)">⬆️ Maná: 80</span>
+      </div>
+    </div>
+
+    <div class="card mockup">
+      <div class="bar">🚗 BUBATR0NIK RACE — Matrix Highway</div>
+      <div style="display:flex;justify-content:space-between;margin:10px 0;font-size:.82rem;">
+        <span>🏆 1º <span style="color:var(--orange)">NebuchadX</span></span>
+        <span>⏱ 1:24.33</span>
+        <span>🔄 Vuelta 2/3</span>
+      </div>
+      <div style="height:70px;background:linear-gradient(180deg,rgba(0,255,70,.05),rgba(0,255,70,.02));
+                  border-radius:8px;border:1px solid rgba(0,255,70,.15);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:.75rem;color:rgba(0,255,70,.6);letter-spacing:2px;">
+        ▓▓▓░░░░░░░░░░ PISTA EN PROGRESO ░░░░░░░░░░░▓▓▓
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn-mock" style="background:var(--orange)">🚀 BOOST</button>
+        <button class="btn-ghost">🛡️ Escudo</button>
+        <button class="btn-ghost">❓ Quiz</button>
+      </div>
+    </div>
+
+    <div class="card mockup">
+      <div class="bar">🐺 LA CUEVA / ZION — Hub Social</div>
+      <div style="font-size:.8rem;padding:8px;background:rgba(0,0,0,.3);border-radius:8px;margin-bottom:10px;">
+        <div style="color:var(--cyan)">🔥 Hoguera · 12 lobos conectados</div>
+        <div style="color:var(--sub);margin-top:6px;">DEVBU_2.0: "¿Alguien para Arena coop?"</div>
+        <div style="color:var(--sub);">LobAlpha: "Voy! Quiz primero ✅"</div>
+        <div style="color:var(--sub);">Manada_7: "Oleada 8 superada 🏆"</div>
+      </div>
+      <div class="row">
+        <span style="font-size:.78rem;color:var(--green)">📋 Misión diaria: +150 XP</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" style="width:67%"></div></div>
+      <div style="font-size:.75rem;color:var(--sub)">Ritual diario: 2/3 completado</div>
+    </div>
+  </div>
+</section>
+
+<!-- PANTALLAS -->
+<section id="pantallas">
+  <h2 class="sec-title">📱 18 Pantallas Especificadas</h2>
+  <div class="grid g4">
+    <div class="card"><div class="icon">🔑</div><h3>01 Login / Registro</h3><p>JWT Auth, OAuth Google/Discord. Validación email. Onboarding 3 pasos.</p><span class="tag tag-green">FASE 1</span></div>
+    <div class="card"><div class="icon">🏕️</div><h3>02 Campamento Base</h3><p>Hub principal. Acceso a módulos, notificaciones, estado Manada, misiones activas.</p><span class="tag tag-green">FASE 1</span></div>
+    <div class="card"><div class="icon">🗺️</div><h3>03 Mapa Misiones</h3><p>30 misiones desbloqueables. Nodos con estado (bloqueado/activo/completo). Lore DPN/Matrix.</p><span class="tag tag-orange">FASE 2</span></div>
+    <div class="card"><div class="icon">❓</div><h3>04 Quiz Game</h3><p>Multi-modo. 8 preguntas, 3 vidas, timer 30s. Boost por racha. Anti-tamper middleware.</p><span class="tag tag-orange">FASE 2</span></div>
+    <div class="card"><div class="icon">📊</div><h3>05 Resultados Quiz</h3><p>Score, XP ganado, TM, SA. Comparativa vs media Manada. Replay o siguiente misión.</p><span class="tag tag-orange">FASE 2</span></div>
+    <div class="card"><div class="icon">🏰</div><h3>06 Arena TD</h3><p>Grid 3×5 interactivo. Drag&drop torres. HUD oleadas, HP, Maná, TM. PvP asalto.</p><span class="tag tag-pink">FASE 3</span></div>
+    <div class="card"><div class="icon">🚗</div><h3>07 BubaTronik Race</h3><p>Arcade racer. 8 pistas. Power-ups quiz en carrera. Ranking tiempo real.</p><span class="tag tag-pink">FASE 3</span></div>
+    <div class="card"><div class="icon">🐺</div><h3>08 La Cueva / Zion</h3><p>Hub social. Chat hoguera, tablón misiones, biblioteca, ritual diario, coop.</p><span class="tag tag-blue">FASE 3</span></div>
+    <div class="card"><div class="icon">👤</div><h3>09 Perfil Lobo</h3><p>Avatar, rango, XP, estadísticas, logros, historial partidas. Personalización.</p><span class="tag tag-blue">FASE 3</span></div>
+    <div class="card"><div class="icon">🏪</div><h3>10 Tienda</h3><p>Cosméticos: skins avatares, torres, vehículos, efectos. TM + SA. Bundle packs.</p><span class="tag tag-blue">FASE 4</span></div>
+    <div class="card"><div class="icon">🏆</div><h3>11 Leaderboard</h3><p>Global, por Manada, por módulo. Semanas, meses. Premios TM por top 3.</p><span class="tag tag-blue">FASE 4</span></div>
+    <div class="card"><div class="icon">🎖️</div><h3>12 Logros</h3><p>25+ logros. Categorías: quiz, arena, race, social. Recompensas TM automáticas.</p><span class="tag tag-blue">FASE 4</span></div>
+    <div class="card"><div class="icon">🚀</div><h3>13 Nebuchadnezzar</h3><p>Nave metaverso. Misiones especiales. Construct Room VR (Three.js/WebXR).</p><span class="tag tag-red">FASE 5</span></div>
+    <div class="card"><div class="icon">🎮</div><h3>14 Minijuegos</h3><p>7 minijuegos: Memoria Matrix, Reflejos, Lobo vs Agentes, Puzzle Cueva, Ritmo, Cartas, Trivia Rápida.</p><span class="tag tag-red">FASE 5</span></div>
+    <div class="card"><div class="icon">📋</div><h3>15 Admin Panel</h3><p>Gestión preguntas, usuarios, moderación, analytics, telemetría, KPIs tiempo real.</p><span class="tag tag-red">ADMIN</span></div>
+    <div class="card"><div class="icon">🔔</div><h3>16 Notificaciones</h3><p>Push web, in-app alerts. Eventos Manada, logros, desafíos diarios, PvP invites.</p><span class="tag tag-green">TRANSVERSAL</span></div>
+    <div class="card"><div class="icon">⚙️</div><h3>17 Configuración</h3><p>Idioma, privacidad, notificaciones, conexiones OAuth, modo accesibilidad.</p><span class="tag tag-green">TRANSVERSAL</span></div>
+    <div class="card"><div class="icon">🌐</div><h3>18 Landing Pública</h3><p>Marketing. Demo interactiva, pricing, comunidad, registro directo. SEO optimizado.</p><span class="tag tag-green">MARKETING</span></div>
+  </div>
+</section>
+
+<!-- API ENDPOINTS -->
+<section id="api">
+  <h2 class="sec-title">🔌 42 Endpoints API</h2>
+  <div class="grid g2">
+    <div>
+      <h3 style="color:var(--cyan);margin-bottom:12px;font-size:.95rem;">AUTH & USUARIOS</h3>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/auth/register</span><span class="ep-desc">Registro + JWT</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/auth/login</span><span class="ep-desc">Login + refresh token</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/users/me</span><span class="ep-desc">Perfil propio</span></div>
+      <div class="ep put"><span class="method m-put">PUT</span><span class="ep-path">/api/users/me</span><span class="ep-desc">Actualizar perfil</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/users/:id/stats</span><span class="ep-desc">Estadísticas jugador</span></div>
+
+      <h3 style="color:var(--green);margin:16px 0 12px;font-size:.95rem;">QUIZ ENGINE</h3>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/quiz/missions</span><span class="ep-desc">Lista misiones</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/quiz/start</span><span class="ep-desc">Iniciar sesión quiz</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/quiz/submit</span><span class="ep-desc">Responder + anti-tamper</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/quiz/finish</span><span class="ep-desc">Cerrar + calcular XP</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/quiz/leaderboard</span><span class="ep-desc">Rankings quiz</span></div>
+
+      <h3 style="color:var(--orange);margin:16px 0 12px;font-size:.95rem;">ARENA TD</h3>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/arena/session/start</span><span class="ep-desc">Nueva partida</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/arena/tower/place</span><span class="ep-desc">Colocar torre</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/arena/wave/next</span><span class="ep-desc">Siguiente oleada</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/arena/session/end</span><span class="ep-desc">Fin partida + recompensas</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/arena/maps</span><span class="ep-desc">Mapas disponibles</span></div>
+    </div>
+    <div>
+      <h3 style="color:var(--pink);margin-bottom:12px;font-size:.95rem;">BUBATR0NIK RACE</h3>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/race/tracks</span><span class="ep-desc">Pistas disponibles</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/race/session/start</span><span class="ep-desc">Iniciar carrera</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/race/lap/submit</span><span class="ep-desc">Registrar vuelta</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/race/session/end</span><span class="ep-desc">Fin + ranking</span></div>
+
+      <h3 style="color:var(--blue);margin:16px 0 12px;font-size:.95rem;">LA MANADA / SOCIAL</h3>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/manada/hoguera</span><span class="ep-desc">Chat en tiempo real</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/manada/ritual</span><span class="ep-desc">Ritual diario</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/manada/missions</span><span class="ep-desc">Misiones grupales</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/manada/invite</span><span class="ep-desc">Invitar a Coop</span></div>
+
+      <h3 style="color:var(--cyan);margin:16px 0 12px;font-size:.95rem;">ECONOMÍA & SHOP</h3>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/shop/items</span><span class="ep-desc">Catálogo tienda</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/shop/buy</span><span class="ep-desc">Compra TM/SA</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/wallet/balance</span><span class="ep-desc">Saldo TM + SA</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/achievements</span><span class="ep-desc">Logros usuario</span></div>
+      <div class="ep get"><span class="method m-get">GET</span><span class="ep-path">/api/leaderboard/global</span><span class="ep-desc">Ranking global</span></div>
+      <div class="ep post"><span class="method m-post">POST</span><span class="ep-path">/api/telemetry/event</span><span class="ep-desc">Analytics KPIs</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack">
+  <h2 class="sec-title">🛠️ Stack Tecnológico</h2>
+  <div class="stack-row">
+    <span class="tech">⚛️ React 18</span><span class="tech">📘 TypeScript</span>
+    <span class="tech">🐻 Zustand</span><span class="tech">🎨 Tailwind CSS</span>
+    <span class="tech">🧩 Shadcn/UI</span><span class="tech">⚡ Vite</span>
+  </div>
+  <div class="stack-row">
+    <span class="tech">🟢 Node.js</span><span class="tech">🚂 Express.js</span>
+    <span class="tech">🔷 Prisma ORM</span><span class="tech">🐘 PostgreSQL</span>
+    <span class="tech">🔑 JWT Auth</span><span class="tech">🐳 Docker</span>
+  </div>
+  <div class="stack-row">
+    <span class="tech">▲ Vercel (FE)</span><span class="tech">🚂 Railway (BE)</span>
+    <span class="tech">🌐 WebSocket</span><span class="tech">🕸️ TorMesh</span>
+    <span class="tech">🥽 Three.js/WebXR</span><span class="tech">📊 Prisma (22 col.)</span>
+  </div>
+</section>
+
+<!-- RANGOS -->
+<section id="rangos">
+  <h2 class="sec-title">🏆 Rangos & Progresión</h2>
+  <div class="grid g2">
+    <div>
+      <div class="rango-row"><div class="rango-icon">🐾</div><div class="rango-info"><div class="name">Cachorro</div><div class="xp">0 – 500 XP</div></div><div class="rango-bar"><div class="rango-bar-fill" style="width:100%;background:#636e72"></div></div></div>
+      <div class="rango-row"><div class="rango-icon">🐺</div><div class="rango-info"><div class="name">Lobo Joven</div><div class="xp">500 – 2.000 XP</div></div><div class="rango-bar"><div class="rango-bar-fill" style="width:80%;background:var(--green)"></div></div></div>
+      <div class="rango-row"><div class="rango-icon">🦴</div><div class="rango-info"><div class="name">Lobo de Manada</div><div class="xp">2.000 – 6.000 XP</div></div><div class="rango-bar"><div class="rango-bar-fill" style="width:60%;background:var(--blue)"></div></div></div>
+      <div class="rango-row"><div class="rango-icon">⚡</div><div class="rango-info"><div class="name">Alfa</div><div class="xp">6.000 – 15.000 XP</div></div><div class="rango-bar"><div class="rango-bar-fill" style="width:40%;background:var(--orange)"></div></div></div>
+      <div class="rango-row"><div class="rango-icon">💎</div><div class="rango-info"><div class="name">Gran Alfa</div><div class="xp">15.000 – 40.000 XP</div></div><div class="rango-bar"><div class="rango-bar-fill" style="width:25%;background:var(--pink)"></div></div></div>
+      <div class="rango-row"><div class="rango-icon">👑</div><div class="rango-info"><div class="name">Guardián Diamante</div><div class="xp">40.000+ XP</div></div><div class="rango-bar"><div class="rango-bar-fill" style="width:10%;background:var(--accent)"></div></div></div>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--cyan);margin-bottom:14px">⚙️ Fórmulas XP</h3>
+      <p style="font-size:.82rem;color:var(--sub);margin-bottom:10px">Fórmulas base extraídas del MASTER v3:</p>
+      <div style="background:#0a0a20;padding:12px;border-radius:8px;font-family:monospace;font-size:.8rem;line-height:1.8;">
+        <div><span style="color:var(--orange)">XP_quiz</span> = score% × 100 + racha × 10 + (tiempo_sobrante × 0.5)</div>
+        <div><span style="color:var(--green)">XP_arena</span> = oleadas × 50 + HP_final × 20 + bonus_quiz</div>
+        <div><span style="color:var(--pink)">XP_race</span> = posición_inv × 30 + tiempo_bonus</div>
+        <div><span style="color:var(--cyan)">TM_earn</span> = XP_total × 0.1 + logros_desbloq × 25</div>
+        <div><span style="color:var(--blue)">ROCE-H</span> = impacto_personas / (horas + energía + recursos)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <h2 class="sec-title">🗓️ Roadmap — 7 Semanas MVP</h2>
+  <div class="grid g2">
+    <div class="timeline">
+      <div class="tl-item"><h4>Semana 1–2: Auth + Campamento Base</h4><p>Setup repo · JWT Auth · Home · DB Prisma base · Docker · CI/CD Vercel</p></div>
+      <div class="tl-item"><h4>Semana 2–3: Quiz Engine</h4><p>CRUD misiones · Motor preguntas · Anti-tamper · XP/TM calc · Leaderboard quiz</p></div>
+      <div class="tl-item"><h4>Semana 3–4: Arena Tower Defense</h4><p>Grid 3×5 · AI oleadas · Torres Archer/Mage/Paladin · Integración quiz-arena</p></div>
+      <div class="tl-item"><h4>Semana 4–5: BubaTronik Race</h4><p>Motor racing · 8 pistas · Power-ups quiz · Ranking tiempo real · 5 vehículos</p></div>
+      <div class="tl-item"><h4>Semana 5–6: La Cueva / Zion</h4><p>Chat WebSocket · Tablón misiones · Ritual diario · Sistema Manada roles</p></div>
+      <div class="tl-item"><h4>Semana 6–7: Rangos + Shop + Logros</h4><p>Sistema XP completo · Tienda cosmética · 25+ logros · Notificaciones push</p></div>
+      <div class="tl-item"><h4>Semana 7: Deploy + QA + Launch</h4><p>Tests E2E · Performance audit · Deploy Vercel+Railway · Métricas KPI activas</p></div>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--orange);margin-bottom:12px">📊 Métricas de Éxito (KPIs)</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Retención Día 1</span><span style="color:var(--green);font-weight:700">&gt; 60%</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Sesión media</span><span style="color:var(--green);font-weight:700">15–20 min</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Quiz completion rate</span><span style="color:var(--green);font-weight:700">&gt; 70%</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Arena engagement</span><span style="color:var(--orange);font-weight:700">&gt; 40%</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Race sessions/week</span><span style="color:var(--orange);font-weight:700">&gt; 3/user</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Manada DAU</span><span style="color:var(--pink);font-weight:700">&gt; 30%</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">ROCE-H objetivo</span><span style="color:var(--cyan);font-weight:700">&gt; 4.5</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--sub)">Escalabilidad</span><span style="color:var(--accent);font-weight:700">100 → 1M users</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROCE-H -->
+<section id="roce">
+  <h2 class="sec-title">📐 Simulador ROCE-H</h2>
+  <div class="grid g4">
+    <div class="roce-meter">
+      <div style="font-size:.8rem;color:var(--sub);margin-bottom:6px">Mínimo · 5h/mes</div>
+      <div class="roce-val">1.2</div>
+      <div class="roce-label">~2 personas impactadas</div>
+      <div class="roce-bar"><div class="roce-fill" style="width:19%"></div></div>
+    </div>
+    <div class="roce-meter" style="border-color:rgba(0,184,148,.6)">
+      <div style="font-size:.8rem;color:var(--sub);margin-bottom:6px">Base · 15h/mes</div>
+      <div class="roce-val" style="color:var(--green)">2.8</div>
+      <div class="roce-label">~8 personas, bienestar+</div>
+      <div class="roce-bar"><div class="roce-fill" style="width:44%"></div></div>
+    </div>
+    <div class="roce-meter" style="border-color:rgba(240,165,0,.6)">
+      <div style="font-size:.8rem;color:var(--sub);margin-bottom:6px">Óptimo · 30h/mes</div>
+      <div class="roce-val" style="color:var(--orange)">4.5</div>
+      <div class="roce-label">~18 personas activas</div>
+      <div class="roce-bar"><div class="roce-fill" style="width:71%"></div></div>
+    </div>
+    <div class="roce-meter" style="border-color:rgba(253,121,168,.6)">
+      <div style="font-size:.8rem;color:var(--sub);margin-bottom:6px">Manada Activa</div>
+      <div class="roce-val" style="color:var(--pink)">6.3</div>
+      <div class="roce-label">~35+ comunidad real</div>
+      <div class="roce-bar"><div class="roce-fill" style="width:100%"></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>DPN_GAME MASTER v3</strong> · DevBuPlaytime · Tarragona, Cataluña · Abril 2026<br>
+  Orquestador: Rubén (DEVBU 2.0) · IA: Perplexity (Lob@-Pulpo) · Estado: PRODUCTION READY ✅<br>
+  React 18 · TypeScript · Zustand · Tailwind · Node.js · Express · Prisma · PostgreSQL · Vercel
+</footer>
+
+</body>
+</html>

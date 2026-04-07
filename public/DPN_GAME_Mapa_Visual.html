@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DPN_GAME — Mapa Visual Interactivo</title>
+<style>
+  :root {
+    --bg:#080818; --card:#10102a; --accent:#6C5CE7;
+    --green:#00B894; --orange:#F0A500; --pink:#FD79A8;
+    --cyan:#4ECDC4; --red:#E17055; --blue:#74B9FF; --text:#e8e8f0; --sub:#9090b0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',Arial,sans-serif;
+         height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+  header { padding:10px 20px; background:rgba(10,10,30,.98);
+           border-bottom:1px solid rgba(108,92,231,.3);
+           display:flex; align-items:center; gap:16px; flex-wrap:wrap; flex-shrink:0; }
+  .logo { font-weight:900; color:var(--accent); font-size:1.2rem; letter-spacing:2px; }
+  .tagline { color:var(--sub); font-size:.82rem; }
+  .legend { display:flex; gap:10px; flex-wrap:wrap; margin-left:auto; }
+  .leg { display:flex; align-items:center; gap:5px; font-size:.75rem; }
+  .leg-dot { width:10px; height:10px; border-radius:50%; }
+  canvas { flex:1; display:block; cursor:grab; }
+  canvas:active { cursor:grabbing; }
+  .tooltip { position:fixed; background:rgba(12,12,35,.97); border:1px solid rgba(108,92,231,.5);
+             border-radius:12px; padding:12px 16px; font-size:.82rem; pointer-events:none;
+             max-width:260px; opacity:0; transition:opacity .2s; z-index:99;
+             line-height:1.65; }
+  .tt-title { font-weight:800; font-size:.95rem; margin-bottom:6px; }
+  .tt-tag { display:inline-block; padding:2px 8px; border-radius:20px;
+            font-size:.68rem; font-weight:700; margin:2px 2px 6px 0; }
+  .info-bar { padding:8px 20px; background:rgba(8,8,24,.9);
+              border-top:1px solid rgba(108,92,231,.2);
+              font-size:.78rem; color:var(--sub); display:flex; gap:20px; flex-wrap:wrap; flex-shrink:0; }
+  .info-bar span b { color:var(--accent); }
+  .ctrl-btn { background:rgba(108,92,231,.15); border:1px solid rgba(108,92,231,.4);
+              color:var(--accent); border-radius:6px; padding:4px 12px; cursor:pointer;
+              font-size:.78rem; transition:.2s; }
+  .ctrl-btn:hover { background:rgba(108,92,231,.3); }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">🐙 DPN_GAME</span>
+  <span class="tagline">Mapa Visual Interactivo · Nodos + Conexiones + ROCE-H</span>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#6C5CE7"></div>Core/Master</div>
+    <div class="leg"><div class="leg-dot" style="background:#00B894"></div>Comunidad</div>
+    <div class="leg"><div class="leg-dot" style="background:#F0A500"></div>Jugabilidad</div>
+    <div class="leg"><div class="leg-dot" style="background:#4ECDC4"></div>Técnica</div>
+    <div class="leg"><div class="leg-dot" style="background:#FD79A8"></div>Lore/Mundo</div>
+    <div class="leg"><div class="leg-dot" style="background:#74B9FF"></div>Métricas</div>
+  </div>
+</header>
+<canvas id="c"></canvas>
+<div class="tooltip" id="tooltip"></div>
+<div class="info-bar">
+  <span>🖱️ Hover = info · Drag = explorar · Scroll = zoom</span>
+  <span><b id="i-nodes">0</b> nodos · <b id="i-edges">0</b> conexiones</span>
+  <span>🔥 ROCE-H actual: <b id="i-roce" style="color:var(--orange)">2.8</b></span>
+  <span style="margin-left:auto">
+    <button class="ctrl-btn" onclick="resetView()">⟳ Reset vista</button>
+    <button class="ctrl-btn" onclick="togglePhysics()" id="phys-btn" style="margin-left:6px">⏸ Pausa</button>
+  </span>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// ─── NODOS ────────────────────────────────────────────────────────────────────
+const NODES = [
+  // CORE
+  {id:'master',label:'MASTER v3',icon:'📋',color:'#6C5CE7',radius:34,
+   cat:'Core',xp:5000,desc:'Documento central del proyecto. Define arquitectura, stack, roadmap y tokens TM.',
+   tags:['Prisma 22 cols','Railway','Vercel'],x:0,y:0,vx:0,vy:0},
+  {id:'glosario',label:'Glosario',icon:'📖',color:'#6C5CE7',radius:26,
+   cat:'Core',xp:1200,desc:'Diccionario vivo: TM, ROCE-H, Manada, Matrix, TorMesh, Nebuchadnezzar...',
+   tags:['Terminología','IA','DPN'],x:0,y:0,vx:0,vy:0},
+
+  // LORE/MUNDO
+  {id:'lobpulpo',label:'Lobpulpo Weaver',icon:'🐙🐺',color:'#FD79A8',radius:38,
+   cat:'Lore',xp:8000,desc:'El guardián pulpo-lobo. Teje realidades, simula ROCE-H. Nodo CENTRAL del lore DPN.',
+   tags:['Personaje Principal','Lobo','Pulpo','Matrix'],x:0,y:0,vx:0,vy:0},
+  {id:'matrix',label:'La Matrix',icon:'🌐',color:'#FD79A8',radius:28,
+   cat:'Lore',xp:2000,desc:'Sistema antagonista. TorMesh lo combate. Genera el "agente" Smith como boss.',
+   tags:['Antagonista','Boss','Arena'],x:0,y:0,vx:0,vy:0},
+  {id:'zion',label:'Zion / Cueva',icon:'🐺',color:'#FD79A8',radius:24,
+   cat:'Lore',xp:900,desc:'Hub social de La Manada. Hoguera, ritual de bienvenida, chat entre lobos.',
+   tags:['Social','Hub','Comunidad'],x:0,y:0,vx:0,vy:0},
+  {id:'nebuchadnezzar',label:'Nebuchadnezzar',icon:'🚀',color:'#FD79A8',radius:22,
+   cat:'Lore',xp:700,desc:'Nave insignia. Vehículo de combate de la Manada. 240 km/h, manejo 5.5.',
+   tags:['Nave','Racing','Vehículo'],x:0,y:0,vx:0,vy:0},
+
+  // COMUNIDAD
+  {id:'manada',label:'La Manada',icon:'🐾',color:'#00B894',radius:30,
+   cat:'Comunidad',xp:3500,desc:'Jugadores activos DPN_GAME. Cada lobo gana XP, TM, sube rango. ROCE-H medible.',
+   tags:['Players','XP','TM','Rangos'],x:0,y:0,vx:0,vy:0},
+  {id:'roce',label:'ROCE-H',icon:'📊',color:'#74B9FF',radius:26,
+   cat:'Métricas',xp:1800,desc:'ROI humanista: Impacto/Energía. Mide bienestar, creatividad y comunidad generada.',
+   tags:['KPI','Impacto','Bienestar'],x:0,y:0,vx:0,vy:0},
+  {id:'rangos',label:'Sistema Rangos',icon:'🏆',color:'#00B894',radius:22,
+   cat:'Comunidad',xp:800,desc:'Cachorro → Lobo Joven → Lobo Manada → Alfa → Gran Alfa → Guardián Diamante',
+   tags:['Progresión','Gamification'],x:0,y:0,vx:0,vy:0},
+
+  // JUGABILIDAD
+  {id:'quiz',label:'Quiz Engine',icon:'❓',color:'#F0A500',radius:26,
+   cat:'Jugabilidad',xp:2200,desc:'Motor de preguntas. 8 preguntas/ronda, timer 30s, vidas, racha, XP dinámico.',
+   tags:['8 preguntas','Timer','Anti-tamper'],x:0,y:0,vx:0,vy:0},
+  {id:'arena',label:'Arena TD',icon:'🏰',color:'#F0A500',radius:26,
+   cat:'Jugabilidad',xp:2500,desc:'Tower Defense. Grid 5×3, 3 tipos torres, 10 oleadas, boss Agente Smith (1500 HP).',
+   tags:['TD','Boss','Torres','Oleadas'],x:0,y:0,vx:0,vy:0},
+  {id:'race',label:'BubaTronik Race',icon:'🚗',color:'#F0A500',radius:22,
+   cat:'Jugabilidad',xp:1600,desc:'Racing en Matrix Highway. Turbo, Quiz Boost, 3 vueltas, rival IA.',
+   tags:['Racing','Quiz-Boost','Matrix'],x:0,y:0,vx:0,vy:0},
+  {id:'tokens',label:'Token TM',icon:'💰',color:'#F0A500',radius:20,
+   cat:'Jugabilidad',xp:600,desc:'Moneda interna. Se gana jugando, se usa en Arena y futuros módulos.',
+   tags:['Economía','Reward','XP'],x:0,y:0,vx:0,vy:0},
+
+  // TÉCNICA
+  {id:'tormesh',label:'TorMesh',icon:'🔐',color:'#4ECDC4',radius:24,
+   cat:'Técnica',xp:1400,desc:'Protocolo descentralizado. Onion routing adaptado al DPN. Combate la Matrix digital.',
+   tags:['Onion','Descentralizado','P2P'],x:0,y:0,vx:0,vy:0},
+  {id:'stack',label:'Tech Stack',icon:'⚙️',color:'#4ECDC4',radius:22,
+   cat:'Técnica',xp:1100,desc:'Next.js 15 · Prisma · Railway · Vercel · Zustand · TypeScript · TailwindCSS',
+   tags:['Next.js','Prisma','Vercel','Zustand'],x:0,y:0,vx:0,vy:0},
+  {id:'ia',label:'IA / Lobpulpo',icon:'🤖',color:'#4ECDC4',radius:20,
+   cat:'Técnica',xp:900,desc:'Motor IA del proyecto. Claude+GPT. Genera preguntas, balance, simulaciones ROCE-H.',
+   tags:['Claude','GPT','Generativo'],x:0,y:0,vx:0,vy:0},
+];
+
+const EDGES = [
+  {a:'master',b:'glosario',weight:3},{a:'master',b:'stack',weight:3},
+  {a:'master',b:'roce',weight:2},{a:'master',b:'quiz',weight:2},
+  {a:'master',b:'arena',weight:2},{a:'master',b:'race',weight:2},
+  {a:'lobpulpo',b:'master',weight:4},{a:'lobpulpo',b:'manada',weight:3},
+  {a:'lobpulpo',b:'roce',weight:3},{a:'lobpulpo',b:'matrix',weight:3},
+  {a:'lobpulpo',b:'ia',weight:2},{a:'lobpulpo',b:'zion',weight:2},
+  {a:'manada',b:'rangos',weight:3},{a:'manada',b:'tokens',weight:2},
+  {a:'manada',b:'zion',weight:2},{a:'manada',b:'roce',weight:2},
+  {a:'quiz',b:'tokens',weight:2},{a:'quiz',b:'rangos',weight:2},
+  {a:'arena',b:'tokens',weight:2},{a:'arena',b:'matrix',weight:2},
+  {a:'race',b:'tokens',weight:1},{a:'race',b:'nebuchadnezzar',weight:2},
+  {a:'matrix',b:'tormesh',weight:3},{a:'matrix',b:'ia',weight:1},
+  {a:'tormesh',b:'stack',weight:2},{a:'stack',b:'ia',weight:2},
+  {a:'nebuchadnezzar',b:'zion',weight:1},{a:'glosario',b:'roce',weight:1},
+];
+
+document.getElementById('i-nodes').textContent = NODES.length;
+document.getElementById('i-edges').textContent = EDGES.length;
+
+// ─── LAYOUT INICIAL ────────────────────────────────────────────────────────────
+function initPositions() {
+  const cx = canvas.width/2, cy = canvas.height/2;
+  NODES[0].x=cx; NODES[0].y=cy; // master centro
+  NODES[2].x=cx-80; NODES[2].y=cy-80; // lobpulpo cerca
+  const rest = NODES.filter((_,i)=>i>2);
+  rest.forEach((n,i)=>{
+    const angle = (i/rest.length)*Math.PI*2;
+    const r = 200+Math.random()*120;
+    n.x = cx+Math.cos(angle)*r; n.y = cy+Math.sin(angle)*r;
+  });
+  NODES.forEach(n=>{ n.vx=0; n.vy=0; });
+}
+
+// ─── CANVAS RESIZE ────────────────────────────────────────────────────────────
+function resize() {
+  const header = document.querySelector('header').offsetHeight;
+  const info = document.querySelector('.info-bar').offsetHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - header - info;
+}
+window.addEventListener('resize', ()=>{ resize(); initPositions(); });
+resize(); initPositions();
+
+// ─── PHYSICS ──────────────────────────────────────────────────────────────────
+let physics = true;
+const K_REPEL=4500, K_SPRING=0.04, REST_LEN=120, DAMP=0.85, MAX_V=6;
+
+function physicsStep() {
+  if(!physics) return;
+  // Repulsión
+  for(let i=0;i<NODES.length;i++){
+    for(let j=i+1;j<NODES.length;j++){
+      const dx=NODES[j].x-NODES[i].x, dy=NODES[j].y-NODES[i].y;
+      const dist=Math.sqrt(dx*dx+dy*dy)||1;
+      const f = K_REPEL/(dist*dist);
+      const fx=f*dx/dist, fy=f*dy/dist;
+      NODES[i].vx-=fx; NODES[i].vy-=fy;
+      NODES[j].vx+=fx; NODES[j].vy+=fy;
+    }
+  }
+  // Atracción por aristas
+  EDGES.forEach(e=>{
+    const a=NODES.find(n=>n.id===e.a), b=NODES.find(n=>n.id===e.b);
+    if(!a||!b) return;
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const f = K_SPRING*(dist-REST_LEN*e.weight*0.7);
+    const fx=f*dx/dist, fy=f*dy/dist;
+    a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy;
+  });
+  // Atracción al centro
+  const cx=canvas.width/2, cy=canvas.height/2;
+  NODES.forEach(n=>{
+    n.vx += (cx-n.x)*0.002; n.vy += (cy-n.y)*0.002;
+    n.vx*=DAMP; n.vy*=DAMP;
+    n.vx=Math.max(-MAX_V,Math.min(MAX_V,n.vx));
+    n.vy=Math.max(-MAX_V,Math.min(MAX_V,n.vy));
+    n.x+=n.vx; n.y+=n.vy;
+  });
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+let cam={x:0,y:0,scale:1};
+let hoveredNode=null;
+
+function worldToScreen(x,y){
+  return [(x-cam.x)*cam.scale+canvas.width/2, (y-cam.y)*cam.scale+canvas.height/2];
+}
+function screenToWorld(sx,sy){
+  return [(sx-canvas.width/2)/cam.scale+cam.x, (sy-canvas.height/2)/cam.scale+cam.y];
+}
+
+function drawEdge(a,b,weight,alpha){
+  const [ax,ay]=worldToScreen(a.x,a.y);
+  const [bx,by]=worldToScreen(b.x,b.y);
+  ctx.beginPath();
+  ctx.moveTo(ax,ay); ctx.lineTo(bx,by);
+  ctx.strokeStyle=`rgba(108,92,231,${alpha*weight*0.12+0.04})`;
+  ctx.lineWidth=weight*0.8*cam.scale;
+  ctx.stroke();
+}
+
+function drawNode(n, highlighted){
+  const [sx,sy]=worldToScreen(n.x,n.y);
+  const r = n.radius*cam.scale;
+  // Glow
+  if(highlighted){
+    const grd=ctx.createRadialGradient(sx,sy,r*0.5,sx,sy,r*2.5);
+    grd.addColorStop(0,n.color+'55'); grd.addColorStop(1,'transparent');
+    ctx.beginPath(); ctx.arc(sx,sy,r*2.5,0,Math.PI*2);
+    ctx.fillStyle=grd; ctx.fill();
+  }
+  // Shadow
+  ctx.shadowColor=n.color; ctx.shadowBlur=highlighted?20:10;
+  // Círculo
+  ctx.beginPath(); ctx.arc(sx,sy,r,0,Math.PI*2);
+  const grad=ctx.createRadialGradient(sx-r*0.3,sy-r*0.3,r*0.1,sx,sy,r);
+  grad.addColorStop(0,n.color+'ee'); grad.addColorStop(1,n.color+'66');
+  ctx.fillStyle=grad; ctx.fill();
+  ctx.strokeStyle = highlighted?'white':n.color+'cc';
+  ctx.lineWidth=highlighted?3:1.5;
+  ctx.stroke();
+  ctx.shadowBlur=0;
+  // Icono
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font=`${Math.max(10,r*0.55)}px serif`;
+  ctx.fillStyle='white'; ctx.fillText(n.icon,sx,sy-r*0.1);
+  // Label
+  if(r>14){
+    ctx.font=`${Math.max(9,Math.min(13,r*0.35))}px 'Segoe UI',sans-serif`;
+    ctx.fillStyle='rgba(255,255,255,.9)';
+    ctx.fillText(n.label,sx,sy+r*0.65);
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // Grid de fondo
+  ctx.strokeStyle='rgba(108,92,231,.04)'; ctx.lineWidth=1;
+  const gs=60*cam.scale;
+  const ox=(canvas.width/2-cam.x*cam.scale)%gs;
+  const oy=(canvas.height/2-cam.y*cam.scale)%gs;
+  for(let x=ox;x<canvas.width;x+=gs){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke(); }
+  for(let y=oy;y<canvas.height;y+=gs){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke(); }
+
+  // Aristas
+  EDGES.forEach(e=>{
+    const a=NODES.find(n=>n.id===e.a), b=NODES.find(n=>n.id===e.b);
+    if(a&&b) drawEdge(a,b,e.weight,1);
+  });
+  // Nodos
+  NODES.forEach(n=>drawNode(n, n===hoveredNode));
+}
+
+// ─── ANIMACIÓN ────────────────────────────────────────────────────────────────
+function loop(){ physicsStep(); render(); requestAnimationFrame(loop); }
+loop();
+
+// ─── INTERACCIÓN ──────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+let drag={active:false,sx:0,sy:0,cx:0,cy:0};
+let nodeDrag={node:null,sx:0,sy:0,ox:0,oy:0};
+
+function getHoveredNode(sx,sy){
+  const [wx,wy]=screenToWorld(sx,sy);
+  let found=null, minD=Infinity;
+  NODES.forEach(n=>{
+    const d=Math.sqrt((n.x-wx)**2+(n.y-wy)**2);
+    if(d<n.radius*1.2 && d<minD){ minD=d; found=n; }
+  });
+  return found;
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const sx=e.clientX-rect.left, sy=e.clientY-rect.top;
+  if(nodeDrag.node){
+    const [wx,wy]=screenToWorld(sx,sy);
+    nodeDrag.node.x=wx; nodeDrag.node.y=wy;
+    nodeDrag.node.vx=0; nodeDrag.node.vy=0;
+    return;
+  }
+  if(drag.active){
+    cam.x=drag.cx-(sx-drag.sx)/cam.scale;
+    cam.y=drag.cy-(sy-drag.sy)/cam.scale;
+    return;
+  }
+  const n=getHoveredNode(sx,sy);
+  hoveredNode=n;
+  if(n){
+    tooltip.style.opacity='1';
+    tooltip.style.left=(e.clientX+14)+'px';
+    tooltip.style.top=(e.clientY-10)+'px';
+    const tagHTML = (n.tags||[]).map(t=>`<span class="tt-tag" style="background:${n.color}22;color:${n.color};border:1px solid ${n.color}44">${t}</span>`).join('');
+    tooltip.innerHTML=`
+      <div class="tt-title" style="color:${n.color}">${n.icon} ${n.label}</div>
+      <div>${n.desc}</div>
+      <div style="margin-top:8px">${tagHTML}</div>
+      <div style="margin-top:6px;font-size:.72rem;color:var(--sub)">XP valor: ${n.xp.toLocaleString()} · Categoría: ${n.cat}</div>
+    `;
+  } else { tooltip.style.opacity='0'; }
+});
+
+canvas.addEventListener('mousedown',e=>{
+  const rect=canvas.getBoundingClientRect();
+  const sx=e.clientX-rect.left, sy=e.clientY-rect.top;
+  const n=getHoveredNode(sx,sy);
+  if(n&&e.button===0){
+    nodeDrag={node:n,sx,sy,ox:n.x,oy:n.y};
+  } else if(e.button===0){
+    drag={active:true,sx,sy,cx:cam.x,cy:cam.y};
+  }
+});
+canvas.addEventListener('mouseup',()=>{ drag.active=false; nodeDrag.node=null; });
+canvas.addEventListener('mouseleave',()=>{ drag.active=false; nodeDrag.node=null; tooltip.style.opacity='0'; });
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const factor=e.deltaY>0?0.9:1.1;
+  cam.scale=Math.max(0.3,Math.min(3,cam.scale*factor));
+},{passive:false});
+
+// Touch
+canvas.addEventListener('touchstart',e=>{
+  const t=e.touches[0], rect=canvas.getBoundingClientRect();
+  const sx=t.clientX-rect.left, sy=t.clientY-rect.top;
+  const n=getHoveredNode(sx,sy);
+  if(n) nodeDrag={node:n,sx,sy}; else drag={active:true,sx,sy,cx:cam.x,cy:cam.y};
+},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  const t=e.touches[0], rect=canvas.getBoundingClientRect();
+  const sx=t.clientX-rect.left, sy=t.clientY-rect.top;
+  if(nodeDrag.node){
+    const [wx,wy]=screenToWorld(sx,sy);
+    nodeDrag.node.x=wx; nodeDrag.node.y=wy; nodeDrag.node.vx=0; nodeDrag.node.vy=0;
+  } else if(drag.active){
+    cam.x=drag.cx-(sx-drag.sx)/cam.scale; cam.y=drag.cy-(sy-drag.sy)/cam.scale;
+  }
+},{passive:true});
+canvas.addEventListener('touchend',()=>{ drag.active=false; nodeDrag.node=null; });
+
+// ─── CONTROLES ────────────────────────────────────────────────────────────────
+function resetView(){ cam={x:0,y:0,scale:1}; initPositions(); }
+function togglePhysics(){
+  physics=!physics;
+  document.getElementById('phys-btn').textContent=physics?'⏸ Pausa':'▶ Animar';
+}
+
+// ROCE-H animado
+let roce=2.8;
+setInterval(()=>{
+  roce=+(roce+(Math.random()-.5)*0.1).toFixed(2);
+  roce=Math.max(1.5,Math.min(4.5,roce));
+  document.getElementById('i-roce').textContent=roce;
+  document.getElementById('i-roce').style.color=roce>3?'#00B894':roce>2?'#F0A500':'#E17055';
+},2000);
+</script>
+</body>
+</html>

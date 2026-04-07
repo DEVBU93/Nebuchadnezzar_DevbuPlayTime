@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DPN_GAME — Demo Jugabilidad</title>
+<style>
+  :root {
+    --bg:#080818; --card:#10102a; --accent:#6C5CE7;
+    --green:#00B894; --orange:#F0A500; --pink:#FD79A8;
+    --cyan:#4ECDC4; --red:#E17055; --blue:#74B9FF; --text:#e8e8f0; --sub:#9090b0;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',Arial,sans-serif;
+         min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  /* HUD */
+  .hud { width:100%; max-width:800px; background:rgba(12,12,32,.98);
+         border-bottom:1px solid rgba(108,92,231,.4);
+         padding:10px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+  .hud .logo { font-weight:900; color:var(--accent); font-size:1.1rem; letter-spacing:2px; }
+  .hud-stat { display:flex; align-items:center; gap:5px; font-size:.82rem; }
+  .hud-stat .val { font-weight:700; }
+  .xp-wrap { flex:1; min-width:100px; }
+  .xp-bar { height:6px; background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden; }
+  .xp-fill { height:100%; border-radius:3px;
+             background:linear-gradient(90deg,var(--accent),var(--cyan));
+             transition:width .5s; }
+  .xp-label { font-size:.7rem; color:var(--sub); margin-top:2px; }
+
+  /* SCREENS */
+  .screen { display:none; width:100%; max-width:800px; padding:20px; }
+  .screen.active { display:flex; flex-direction:column; align-items:center; }
+
+  /* MENU */
+  .menu-title { font-size:2.5rem; font-weight:900; text-align:center; margin:30px 0 8px;
+                background:linear-gradient(135deg,var(--accent),var(--cyan));
+                -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .menu-sub { color:var(--sub); text-align:center; margin-bottom:30px; }
+  .module-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+                 gap:14px; width:100%; margin-bottom:20px; }
+  .mod-btn { background:var(--card); border:1px solid rgba(255,255,255,.08);
+             border-radius:14px; padding:20px; cursor:pointer; transition:.25s;
+             display:flex; flex-direction:column; align-items:center; gap:10px;
+             text-align:center; }
+  .mod-btn:hover { border-color:var(--accent); transform:translateY(-3px);
+                   box-shadow:0 8px 24px rgba(108,92,231,.3); }
+  .mod-btn .mi { font-size:2.2rem; }
+  .mod-btn .mn { font-weight:700; font-size:.9rem; color:var(--text); }
+  .mod-btn .ms { font-size:.75rem; color:var(--sub); }
+  .mod-btn .mtag { font-size:.7rem; padding:3px 10px; border-radius:20px; font-weight:700; }
+
+  /* QUIZ */
+  .quiz-wrap { width:100%; }
+  .q-header { display:flex; justify-content:space-between; align-items:center;
+              margin-bottom:16px; }
+  .q-prog { font-size:.85rem; color:var(--sub); }
+  .timer-wrap { position:relative; width:52px; height:52px; }
+  .timer-wrap svg { transform:rotate(-90deg); }
+  .timer-num { position:absolute; inset:0; display:flex; align-items:center;
+               justify-content:center; font-weight:900; font-size:1rem; }
+  .q-lives { display:flex; gap:4px; font-size:1.2rem; }
+  .q-category { font-size:.75rem; color:var(--cyan); background:rgba(78,205,196,.15);
+                padding:4px 12px; border-radius:20px; margin-bottom:12px; display:inline-block; }
+  .q-text { font-size:1.15rem; font-weight:600; margin-bottom:20px; line-height:1.55;
+            background:rgba(108,92,231,.07); padding:16px; border-radius:12px;
+            border-left:3px solid var(--accent); }
+  .answers { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .ans-btn { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+             border-radius:10px; padding:14px; cursor:pointer; font-size:.88rem;
+             text-align:left; transition:.2s; color:var(--text); }
+  .ans-btn:hover:not(:disabled) { border-color:var(--accent); background:rgba(108,92,231,.15); }
+  .ans-btn.correct { background:rgba(0,184,148,.2)!important; border-color:var(--green)!important;
+                     color:var(--green)!important; }
+  .ans-btn.wrong { background:rgba(225,112,85,.2)!important; border-color:var(--red)!important;
+                   color:var(--red)!important; }
+  .q-feedback { margin-top:14px; padding:12px 16px; border-radius:10px;
+                font-size:.88rem; font-weight:600; display:none; }
+  .q-feedback.ok { background:rgba(0,184,148,.15); color:var(--green); border:1px solid rgba(0,184,148,.3); }
+  .q-feedback.fail { background:rgba(225,112,85,.15); color:var(--red); border:1px solid rgba(225,112,85,.3); }
+  .q-racha { text-align:center; margin-top:10px; font-size:.85rem; color:var(--orange); font-weight:700; }
+
+  /* ARENA */
+  .arena-wrap { width:100%; }
+  .arena-hud { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px; font-size:.85rem; }
+  .arena-stat { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+                padding:6px 14px; border-radius:8px; }
+  .arena-stat span { color:var(--accent); font-weight:700; }
+  .grid-arena { display:grid; grid-template-columns:repeat(5,1fr); gap:6px;
+                margin-bottom:14px; }
+  .cell { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07);
+          border-radius:8px; aspect-ratio:1; display:flex; align-items:center;
+          justify-content:center; font-size:1.4rem; cursor:pointer; transition:.15s; }
+  .cell:hover { border-color:var(--accent); background:rgba(108,92,231,.15); }
+  .cell.tower { cursor:default; }
+  .cell.enemy { animation:pulse .5s infinite alternate; }
+  @keyframes pulse { from { opacity:.7; } to { opacity:1; } }
+  .tower-selector { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .t-btn { background:var(--card); border:2px solid rgba(255,255,255,.1);
+           border-radius:10px; padding:8px 16px; cursor:pointer;
+           font-size:.83rem; transition:.2s; }
+  .t-btn:hover, .t-btn.selected { border-color:var(--accent); color:var(--accent); }
+  .wave-btn { background:var(--accent); color:white; border:none; border-radius:10px;
+              padding:10px 24px; font-size:.9rem; cursor:pointer; font-weight:700;
+              margin-top:8px; transition:.2s; }
+  .wave-btn:hover { background:#5a4cd0; }
+  .arena-log { background:rgba(0,0,0,.3); border-radius:8px; padding:10px;
+               font-size:.78rem; color:var(--sub); height:80px; overflow-y:auto;
+               line-height:1.7; }
+
+  /* RESULTS */
+  .result-wrap { text-align:center; padding:20px; }
+  .result-score { font-size:4rem; font-weight:900; margin:16px 0;
+                  background:linear-gradient(135deg,var(--accent),var(--cyan));
+                  -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .result-stats { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:16px 0; }
+  .r-stat { background:var(--card); border:1px solid rgba(255,255,255,.08);
+            border-radius:10px; padding:12px 20px; text-align:center; }
+  .r-stat .rv { font-size:1.4rem; font-weight:900; }
+  .r-stat .rl { font-size:.75rem; color:var(--sub); }
+  .back-btn { background:transparent; border:1px solid var(--accent); color:var(--accent);
+              border-radius:10px; padding:10px 24px; cursor:pointer; font-size:.9rem;
+              margin-top:16px; transition:.2s; }
+  .back-btn:hover { background:var(--accent); color:white; }
+  .btn-play { background:var(--accent); color:white; border:none; border-radius:12px;
+              padding:12px 28px; font-size:.95rem; cursor:pointer; font-weight:700;
+              width:100%; max-width:300px; margin-top:10px; transition:.2s; }
+  .btn-play:hover { background:#5a4cd0; transform:translateY(-2px); }
+
+  /* RACE */
+  .race-track { width:100%; height:180px; background:linear-gradient(180deg,#0a1a0a,#0d260d);
+                border-radius:12px; border:1px solid rgba(0,255,70,.15);
+                position:relative; overflow:hidden; margin-bottom:14px; }
+  .road { position:absolute; top:50%; left:0; right:0; height:60px;
+          transform:translateY(-50%); background:rgba(0,0,0,.5);
+          border-top:2px dashed rgba(255,255,255,.15);
+          border-bottom:2px dashed rgba(255,255,255,.15); }
+  .car { position:absolute; font-size:1.8rem; top:50%; transform:translateY(-50%);
+         transition:left .1s linear; filter:drop-shadow(0 0 8px rgba(108,92,231,.8)); }
+  .rival { position:absolute; font-size:1.8rem; top:50%; transform:translateY(-50%) scaleX(-1);
+           transition:left .1s linear; }
+  .race-hud2 { display:flex; justify-content:space-between; font-size:.85rem; flex-wrap:wrap; gap:8px; }
+  .race-btn { background:var(--orange); color:#000; border:none; border-radius:10px;
+              padding:10px 24px; font-weight:800; cursor:pointer; font-size:.9rem;
+              transition:.2s; }
+  .race-btn:hover { background:#e09400; }
+  .progress-track { height:10px; background:rgba(255,255,255,.07); border-radius:5px;
+                    margin:8px 0; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:5px; transition:width .2s;
+                   background:linear-gradient(90deg,var(--accent),var(--pink)); }
+
+  .notification { position:fixed; top:80px; right:20px; background:rgba(108,92,231,.9);
+                  color:white; padding:10px 20px; border-radius:10px;
+                  font-size:.85rem; font-weight:600; pointer-events:none;
+                  opacity:0; transform:translateY(-10px); transition:.3s;
+                  max-width:280px; z-index:999; }
+  .notification.show { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NOTIFICACIÓN -->
+<div class="notification" id="notif"></div>
+
+<!-- HUD GLOBAL -->
+<div class="hud">
+  <span class="logo">🎮 DPN</span>
+  <div class="hud-stat">🐺 <span style="color:var(--cyan)" id="username">DEVBU_2.0</span></div>
+  <div class="hud-stat">⭐ XP: <span class="val" style="color:var(--orange)" id="hud-xp">0</span></div>
+  <div class="hud-stat">💰 TM: <span class="val" style="color:var(--green)" id="hud-tm">100</span></div>
+  <div class="hud-stat">🔥 Racha: <span class="val" style="color:var(--pink)" id="hud-racha">0</span></div>
+  <div class="xp-wrap">
+    <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-label" id="xp-label">Cachorro · 0/500 XP</div>
+  </div>
+  <div class="hud-stat">🏆 <span style="color:var(--accent)" id="hud-rango">Cachorro</span></div>
+</div>
+
+<!-- PANTALLA: MENÚ -->
+<div class="screen active" id="screen-menu">
+  <div class="menu-title">DevBuPlaytime</div>
+  <p class="menu-sub">Elige tu módulo, lobo. La Manada te espera. 🐺</p>
+  <div class="module-grid">
+    <div class="mod-btn" onclick="startQuiz()">
+      <div class="mi">❓</div>
+      <div class="mn">Quiz Engine</div>
+      <div class="ms">8 preguntas · 3 vidas · anti-tamper</div>
+      <div class="mtag" style="background:rgba(0,184,148,.2);color:var(--green)">+XP +TM</div>
+    </div>
+    <div class="mod-btn" onclick="startArena()">
+      <div class="mi">🏰</div>
+      <div class="mn">Arena TD</div>
+      <div class="ms">Grid 3×5 · Torres · Oleadas Matrix</div>
+      <div class="mtag" style="background:rgba(240,165,0,.2);color:var(--orange)">COMBATE</div>
+    </div>
+    <div class="mod-btn" onclick="startRace()">
+      <div class="mi">🚗</div>
+      <div class="mn">BubaTronik Race</div>
+      <div class="ms">Matrix Highway · Power-ups quiz</div>
+      <div class="mtag" style="background:rgba(253,121,168,.2);color:var(--pink)">RACING</div>
+    </div>
+    <div class="mod-btn" onclick="notify('🐺 La Cueva — Chat en tiempo real próximamente en producción!','cyan')">
+      <div class="mi">🐺</div>
+      <div class="mn">La Cueva / Zion</div>
+      <div class="ms">Hub social · Hoguera · Ritual</div>
+      <div class="mtag" style="background:rgba(116,185,255,.2);color:var(--blue)">SOCIAL</div>
+    </div>
+  </div>
+</div>
+
+<!-- PANTALLA: QUIZ -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-wrap">
+    <div class="q-header">
+      <div>
+        <div class="q-prog" id="q-prog">Pregunta 1/8</div>
+        <div class="q-lives" id="q-lives">❤️❤️❤️</div>
+      </div>
+      <div class="timer-wrap">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/>
+          <circle id="timer-circle" cx="26" cy="26" r="22" fill="none"
+                  stroke="var(--accent)" stroke-width="4"
+                  stroke-dasharray="138.2" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timer-num">30</div>
+      </div>
+    </div>
+    <div class="q-category" id="q-category">🌐 DPN/Matrix</div>
+    <div class="q-text" id="q-text">Cargando pregunta...</div>
+    <div class="answers" id="answers"></div>
+    <div class="q-feedback" id="q-feedback"></div>
+    <div class="q-racha" id="q-racha-display"></div>
+  </div>
+</div>
+
+<!-- PANTALLA: ARENA -->
+<div class="screen" id="screen-arena">
+  <div class="arena-wrap">
+    <h2 style="color:var(--orange);margin-bottom:14px;text-align:center">🏰 Arena TD — La Matrix Ataca</h2>
+    <div class="arena-hud">
+      <div class="arena-stat">❤️ HP: <span id="a-hp">5</span>/5</div>
+      <div class="arena-stat">💰 TM: <span id="a-tm">200</span></div>
+      <div class="arena-stat">⚡ Maná: <span id="a-mana">50</span></div>
+      <div class="arena-stat">🌊 Oleada: <span id="a-wave">0</span>/10</div>
+    </div>
+    <div style="margin-bottom:8px;font-size:.82rem;color:var(--sub)">Selecciona torre → Click en celda vacía para colocar:</div>
+    <div class="tower-selector">
+      <div class="t-btn selected" id="t-archer" onclick="selectTower('archer',this)">🏹 Archer (20 Maná)</div>
+      <div class="t-btn" id="t-mage" onclick="selectTower('mage',this)">🧙 Mage (35 Maná)</div>
+      <div class="t-btn" id="t-paladin" onclick="selectTower('paladin',this)">⚔️ Paladin (50 Maná)</div>
+    </div>
+    <div class="grid-arena" id="arena-grid"></div>
+    <button class="wave-btn" id="wave-btn" onclick="launchWave()">▶ Lanzar Oleada</button>
+    <div class="arena-log" id="arena-log">[ Sistema Arena iniciado. Coloca torres y lanza oleadas. ]</div>
+  </div>
+</div>
+
+<!-- PANTALLA: RACE -->
+<div class="screen" id="screen-race">
+  <h2 style="color:var(--pink);margin-bottom:14px;text-align:center">🚗 BubaTronik Race — Matrix Highway</h2>
+  <div class="race-track">
+    <div class="road"></div>
+    <div class="car" id="car" style="left:5%">🐺</div>
+    <div class="rival" id="rival" style="left:85%;top:40%">🤖</div>
+  </div>
+  <div style="margin-bottom:8px;">
+    <div style="font-size:.8rem;color:var(--sub);margin-bottom:4px">Tu progreso</div>
+    <div class="progress-track"><div class="progress-fill" id="race-progress" style="width:5%"></div></div>
+  </div>
+  <div class="race-hud2">
+    <span id="race-pos">Posición: 🏆 1º</span>
+    <span id="race-lap">Vuelta: 1/3</span>
+    <span id="race-time">⏱ 0.0s</span>
+    <span id="race-speed" style="color:var(--orange)">⚡ 0 km/h</span>
+  </div>
+  <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+    <button class="race-btn" id="race-go" onclick="pressTurbo()">🚀 TURBO</button>
+    <button class="race-btn" onclick="quizBoost()" style="background:var(--cyan);color:#000">❓ Quiz Boost</button>
+    <button class="back-btn" onclick="goMenu()">← Menú</button>
+  </div>
+</div>
+
+<!-- PANTALLA: RESULTADOS -->
+<div class="screen" id="screen-result">
+  <div class="result-wrap">
+    <div id="result-emoji" style="font-size:3rem">🏆</div>
+    <div id="result-title" style="font-size:1.5rem;font-weight:900;margin-top:8px">¡Resultado!</div>
+    <div class="result-score" id="result-score">0%</div>
+    <div class="result-stats" id="result-stats"></div>
+    <button class="back-btn" onclick="goMenu()">← Volver al Menú</button>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const state = { xp:0, tm:100, racha:0, lives:3, currentQ:0, score:0,
+                timerInterval:null, timerVal:30, answeredQ:false,
+                selectedTower:'archer', arenaHP:5, arenaMana:50, arenaTM:200,
+                arenaWave:0, arenaGrid:Array(15).fill(null),
+                racePos:5, rivalPos:85, raceLap:1, raceTime:0,
+                raceTurbo:false, raceInterval:null };
+
+const RANGOS = [
+  {name:'Cachorro',icon:'🐾',xp:0},{name:'Lobo Joven',icon:'🐺',xp:500},
+  {name:'Lobo Manada',icon:'🦴',xp:2000},{name:'Alfa',icon:'⚡',xp:6000},
+  {name:'Gran Alfa',icon:'💎',xp:15000},{name:'Guardián Diamante',icon:'👑',xp:40000}
+];
+
+const PREGUNTAS = [
+  {cat:'🌐 DPN/Matrix', text:'¿Qué protocolo usa TorMesh para comunicaciones descentralizadas?',
+   opts:['Onion routing','HTTP/3','WebSocket','gRPC'], correct:0,
+   explain:'TorMesh usa Onion routing para capas de cifrado descentralizado.'},
+  {cat:'⚛️ Frontend', text:'¿Qué biblioteca de estado global usa DPN_GAME en React 18?',
+   opts:['Redux','Zustand','MobX','Jotai'], correct:1,
+   explain:'Zustand es el gestor de estado elegido: ligero y sin boilerplate.'},
+  {cat:'🐘 Backend', text:'¿Cuántas colecciones tiene el schema Prisma de DPN_GAME?',
+   opts:['12','18','22','35'], correct:2,
+   explain:'22 colecciones Prisma documentadas en el MASTER v3.'},
+  {cat:'🏰 Arena', text:'¿Cuántos HP tiene el Agente Smith (boss Arena TD)?',
+   opts:['500','800','1200','1500'], correct:3,
+   explain:'Agente Smith: 1500 HP, boss cada 10 oleadas. Se multiplica al 50%.'},
+  {cat:'📐 ROCE-H', text:'¿Cuál es la fórmula base del ROCE-H en DPN_GAME?',
+   opts:['TM/XP','Impacto/Energía','Users/Tiempo','Score/Vidas'], correct:1,
+   explain:'ROCE-H = Impacto humano social anual / Energía y recursos empleados.'},
+  {cat:'🚗 Racing', text:'¿Cuál es la velocidad máxima del vehículo Nebuchadnezzar_X?',
+   opts:['180 km/h','210 km/h','240 km/h','260 km/h'], correct:2,
+   explain:'Nebuchadnezzar_X: 240 km/h — velocidad pura, manejo 5.5.'},
+  {cat:'🐺 Manada', text:'¿Cuántos XP necesita un jugador para alcanzar rango "Gran Alfa"?',
+   opts:['6.000','10.000','15.000','25.000'], correct:2,
+   explain:'Gran Alfa se alcanza con 15.000 XP. Justo antes de Guardián Diamante.'},
+  {cat:'⚙️ Stack', text:'¿En qué plataforma se despliega el Frontend de DPN_GAME?',
+   opts:['AWS','Firebase','Vercel','Netlify'], correct:2,
+   explain:'Frontend desplegado en Vercel. Backend en Railway. Stack confirmado MASTER v3.'}
+];
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+function notify(msg, color='accent') {
+  const n = document.getElementById('notif');
+  const colors = {accent:'rgba(108,92,231,.95)',green:'rgba(0,184,148,.95)',
+                  orange:'rgba(240,165,0,.95)',pink:'rgba(253,121,168,.95)',
+                  red:'rgba(225,112,85,.95)',cyan:'rgba(78,205,196,.9)'};
+  n.style.background = colors[color]||colors.accent;
+  n.textContent = msg; n.classList.add('show');
+  setTimeout(()=>n.classList.remove('show'), 2800);
+}
+function updateHUD() {
+  document.getElementById('hud-xp').textContent = state.xp;
+  document.getElementById('hud-tm').textContent = state.tm;
+  document.getElementById('hud-racha').textContent = state.racha;
+  const rango = RANGOS.filter(r=>state.xp>=r.xp).pop();
+  const next = RANGOS.find(r=>r.xp>state.xp);
+  document.getElementById('hud-rango').textContent = rango.icon+' '+rango.name;
+  const pct = next ? Math.round((state.xp-rango.xp)/(next.xp-rango.xp)*100) : 100;
+  document.getElementById('xp-fill').style.width = pct+'%';
+  document.getElementById('xp-label').textContent =
+    rango.name+' · '+state.xp+'/'+(next?next.xp:'MAX')+' XP';
+}
+function goMenu() {
+  clearInterval(state.timerInterval); clearInterval(state.raceInterval);
+  showScreen('menu');
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────────────────
+function startQuiz() {
+  state.lives=3; state.currentQ=0; state.score=0; state.racha=0;
+  showScreen('quiz'); loadQuestion();
+}
+function loadQuestion() {
+  clearInterval(state.timerInterval);
+  if(state.currentQ>=PREGUNTAS.length){ endQuiz(); return; }
+  const q = PREGUNTAS[state.currentQ];
+  document.getElementById('q-prog').textContent = `Pregunta ${state.currentQ+1}/8`;
+  document.getElementById('q-lives').textContent = '❤️'.repeat(state.lives)+'🖤'.repeat(3-state.lives);
+  document.getElementById('q-category').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-feedback').style.display='none';
+  document.getElementById('q-racha-display').textContent = state.racha>1?`🔥 ¡Racha x${state.racha}! +${state.racha*5} XP extra`:'';
+  const ans = document.getElementById('answers');
+  ans.innerHTML = q.opts.map((o,i)=>
+    `<button class="ans-btn" onclick="answerQ(${i})">${String.fromCharCode(65+i)}) ${o}</button>`
+  ).join('');
+  state.answeredQ=false; state.timerVal=30;
+  document.getElementById('timer-num').textContent=30;
+  document.getElementById('timer-circle').style.strokeDashoffset=0;
+  state.timerInterval = setInterval(()=>{
+    state.timerVal--;
+    document.getElementById('timer-num').textContent=state.timerVal;
+    const pct = (30-state.timerVal)/30;
+    document.getElementById('timer-circle').style.strokeDashoffset = pct*138.2;
+    document.getElementById('timer-circle').style.stroke = state.timerVal<=10?'var(--red)':'var(--accent)';
+    if(state.timerVal<=0){ clearInterval(state.timerInterval); answerQ(-1); }
+  }, 1000);
+}
+function answerQ(idx) {
+  if(state.answeredQ) return;
+  state.answeredQ=true;
+  clearInterval(state.timerInterval);
+  const q = PREGUNTAS[state.currentQ];
+  const btns = document.querySelectorAll('.ans-btn');
+  btns.forEach(b=>b.disabled=true);
+  btns[q.correct].classList.add('correct');
+  const fb = document.getElementById('q-feedback');
+  if(idx===q.correct){
+    btns.forEach((b,i)=>{ if(i!==q.correct) b.style.opacity='.3'; });
+    state.racha++; state.score++;
+    const xpGain = 50 + state.racha*5 + Math.max(0,state.timerVal)*0.5;
+    const tmGain = 10;
+    state.xp+=Math.round(xpGain); state.tm+=tmGain;
+    fb.className='q-feedback ok'; fb.style.display='block';
+    fb.textContent=`✅ ¡Correcto! +${Math.round(xpGain)} XP +${tmGain} TM · ${q.explain}`;
+    notify(`✅ +${Math.round(xpGain)} XP · Racha ${state.racha}🔥`, 'green');
+  } else {
+    if(idx>=0) btns[idx].classList.add('wrong');
+    state.racha=0; state.lives--;
+    fb.className='q-feedback fail'; fb.style.display='block';
+    fb.textContent=`❌ ${idx===-1?'Tiempo agotado':'Incorrecto'} · Respuesta: ${q.opts[q.correct]} · ${q.explain}`;
+    notify(idx===-1?'⏱ ¡Tiempo agotado! -1 vida':'❌ Incorrecto -1 vida','red');
+    if(state.lives<=0){ setTimeout(endQuiz,1500); return; }
+  }
+  updateHUD();
+  state.currentQ++;
+  setTimeout(loadQuestion, 2000);
+}
+function endQuiz() {
+  clearInterval(state.timerInterval);
+  const pct = Math.round(state.score/PREGUNTAS.length*100);
+  const pass = pct>=70;
+  document.getElementById('result-emoji').textContent = pass?'🏆':'💀';
+  document.getElementById('result-title').textContent = pass?'¡Misión Completada!':'Game Over — Más suerte próxima vez';
+  document.getElementById('result-score').textContent = pct+'%';
+  const xpBonus = pass?150:30; state.xp+=xpBonus; updateHUD();
+  document.getElementById('result-stats').innerHTML = `
+    <div class="r-stat"><div class="rv" style="color:var(--green)">${state.score}/8</div><div class="rl">Correctas</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--orange)">+${xpBonus}</div><div class="rl">XP bonus</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--cyan)">${state.racha}</div><div class="rl">Racha final</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--accent)">${state.xp}</div><div class="rl">XP Total</div></div>
+  `;
+  showScreen('result');
+}
+
+// ─── ARENA ────────────────────────────────────────────────────────────────────
+const TOWER_DATA = {
+  archer:{icon:'🏹',cost:20,dmg:15,name:'Archer'},
+  mage:{icon:'🧙',cost:35,dmg:30,name:'Mage'},
+  paladin:{icon:'⚔️',cost:50,dmg:50,name:'Paladin'}
+};
+function startArena() {
+  state.arenaHP=5; state.arenaMana=50; state.arenaTM=200; state.arenaWave=0;
+  state.arenaGrid=Array(15).fill(null);
+  showScreen('arena'); renderArena();
+  arenaLog('[ Sistema Arena iniciado. Coloca torres y lanza oleadas. ]');
+}
+function renderArena() {
+  document.getElementById('a-hp').textContent=state.arenaHP;
+  document.getElementById('a-mana').textContent=state.arenaMana;
+  document.getElementById('a-tm').textContent=state.arenaTM;
+  document.getElementById('a-wave').textContent=state.arenaWave;
+  const g = document.getElementById('arena-grid'); g.innerHTML='';
+  state.arenaGrid.forEach((cell,i)=>{
+    const d = document.createElement('div');
+    d.className='cell'+(cell?' tower':'');
+    if(cell && cell.type==='enemy') d.classList.add('enemy');
+    d.textContent = cell ? (cell.type==='enemy'?'👾':TOWER_DATA[cell.type].icon) : '';
+    if(!cell) d.onclick=()=>placeTower(i);
+    d.title = cell ? (cell.type==='enemy'?`HP: ${cell.hp}`:`Torre: ${TOWER_DATA[cell.type].name}`) : 'Vacío';
+    g.appendChild(d);
+  });
+}
+function selectTower(type, el) {
+  state.selectedTower=type;
+  document.querySelectorAll('.t-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function placeTower(i) {
+  const t = state.selectedTower; const cost = TOWER_DATA[t].cost;
+  if(state.arenaMana<cost){ notify('⚡ Maná insuficiente!','red'); return; }
+  state.arenaGrid[i]={type:t}; state.arenaMana-=cost;
+  arenaLog(`+ Torre ${TOWER_DATA[t].name} colocada en celda ${i+1}. Maná: ${state.arenaMana}`);
+  renderArena(); updateHUD();
+}
+function launchWave() {
+  if(state.arenaWave>=10){ notify('🏆 ¡Arena completada! +300 XP','green'); endArena(true); return; }
+  state.arenaWave++;
+  const numEnemies = Math.min(state.arenaWave+1, 5);
+  const enemyHP = state.arenaWave*50 + 50;
+  const isBoss = state.arenaWave%5===0;
+  arenaLog(`
+🌊 === OLEADA ${state.arenaWave}/10 === ${isBoss?'⚠️ BOSS WAVE':''}  Enemigos: ${numEnemies}`);
+  // Coloca enemigos en celdas vacías
+  let placed=0;
+  for(let i=14;i>=0&&placed<numEnemies;i--){
+    if(!state.arenaGrid[i]){
+      state.arenaGrid[i]={type:'enemy',hp:isBoss?enemyHP*3:enemyHP};
+      placed++;
+    }
+  }
+  // Torres atacan
+  let totalDmg=0; let towersCount=0;
+  state.arenaGrid.forEach((cell)=>{
+    if(cell&&cell.type!=='enemy'){ towersCount++; totalDmg+=TOWER_DATA[cell.type].dmg; }
+  });
+  // Daño a enemigos
+  let killed=0;
+  state.arenaGrid.forEach((cell,i)=>{
+    if(cell&&cell.type==='enemy'){
+      cell.hp-=totalDmg;
+      if(cell.hp<=0){ state.arenaGrid[i]=null; killed++; }
+    }
+  });
+  const survive = state.arenaGrid.filter(c=>c&&c.type==='enemy').length;
+  const dmgToBase = survive * (isBoss?2:1);
+  state.arenaHP = Math.max(0, state.arenaHP - dmgToBase);
+  const tmGain = killed*20 + (isBoss&&killed>0?100:0);
+  state.arenaTM+=tmGain; state.arenaMana=Math.min(100,state.arenaMana+20);
+  arenaLog(`🏹 Torres(${towersCount}) →  ${totalDmg} DMG total · Bajas: ${killed} · Sobreviven: ${survive}`);
+  if(dmgToBase>0) arenaLog(`💥 Base dañada -${dmgToBase} HP · HP restante: ${state.arenaHP}`);
+  if(tmGain>0){ arenaLog(`💰 +${tmGain} TM obtenidos`); state.tm+=Math.floor(tmGain/5); updateHUD(); }
+  renderArena();
+  if(state.arenaHP<=0){ endArena(false); return; }
+  if(state.arenaWave>=10){ endArena(true); }
+}
+function endArena(win) {
+  state.xp += win?300:50; state.tm += win?50:10; updateHUD();
+  document.getElementById('result-emoji').textContent = win?'🏰':'💀';
+  document.getElementById('result-title').textContent = win?'¡Arena Conquistada!':'La Matrix Ganó';
+  document.getElementById('result-score').textContent = `Oleada ${state.arenaWave}/10`;
+  document.getElementById('result-stats').innerHTML = `
+    <div class="r-stat"><div class="rv" style="color:var(--orange)">${win?300:50}</div><div class="rl">XP ganado</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--green)">${state.arenaHP}/5</div><div class="rl">HP Final</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--cyan)">${state.arenaTM}</div><div class="rl">TM Arena</div></div>
+  `;
+  showScreen('result');
+}
+function arenaLog(msg) {
+  const log = document.getElementById('arena-log');
+  log.textContent += '
+'+msg; log.scrollTop=log.scrollHeight;
+}
+
+// ─── RACE ─────────────────────────────────────────────────────────────────────
+function startRace() {
+  state.racePos=5; state.rivalPos=85; state.raceLap=1; state.raceTime=0;
+  state.raceTurbo=false;
+  clearInterval(state.raceInterval);
+  showScreen('race'); updateRaceUI();
+  state.raceInterval = setInterval(()=>{
+    state.raceTime+=0.1;
+    // rival auto-avanza
+    state.rivalPos=Math.max(5,state.rivalPos-(Math.random()*1.2+0.8));
+    if(state.rivalPos<=5){ state.rivalPos=85; state.raceLap++; }
+    updateRaceUI();
+    if(state.raceLap>3){ clearInterval(state.raceInterval); endRace(); }
+  },100);
+}
+function pressTurbo() {
+  state.racePos = Math.min(88, state.racePos + (state.raceTurbo?8:12));
+  state.raceTurbo=!state.raceTurbo;
+  if(state.racePos>=88){ state.racePos=5; state.raceLap++; notify(`🔄 Vuelta ${state.raceLap}/3 completada!`,'orange'); }
+  updateRaceUI();
+  if(state.raceLap>3){ clearInterval(state.raceInterval); endRace(); }
+}
+function quizBoost() {
+  const q = PREGUNTAS[Math.floor(Math.random()*PREGUNTAS.length)];
+  const correct = prompt(`❓ QUIZ BOOST!
+
+${q.text}
+
+${q.opts.map((o,i)=>String.fromCharCode(65+i)+') '+o).join('
+')}
+
+Escribe la letra (A/B/C/D):`);
+  if(correct && correct.trim().toUpperCase()===String.fromCharCode(65+q.correct)){
+    state.racePos=Math.min(88,state.racePos+20);
+    notify('🚀 ¡Respuesta correcta! +20 posiciones BOOST!','green');
+  } else { notify('❌ Incorrecto — sin boost','red'); }
+  updateRaceUI();
+}
+function updateRaceUI() {
+  const car = document.getElementById('car');
+  const rival = document.getElementById('rival');
+  car.style.left = state.racePos+'%';
+  rival.style.left = state.rivalPos+'%';
+  const speed = Math.round(120+Math.random()*60);
+  document.getElementById('race-speed').textContent=`⚡ ${speed} km/h`;
+  document.getElementById('race-time').textContent=`⏱ ${state.raceTime.toFixed(1)}s`;
+  document.getElementById('race-lap').textContent=`Vuelta: ${Math.min(state.raceLap,3)}/3`;
+  const ahead = state.racePos > state.rivalPos;
+  document.getElementById('race-pos').textContent = ahead?'Posición: 🏆 1º':'Posición: 2º';
+  document.getElementById('race-progress').style.width = Math.min(state.racePos,88)+'%';
+}
+function endRace() {
+  const win = state.racePos >= state.rivalPos || state.racePos > 80;
+  state.xp+=win?200:60; state.tm+=win?40:10; updateHUD();
+  document.getElementById('result-emoji').textContent=win?'🚗':'🤖';
+  document.getElementById('result-title').textContent=win?'¡Victoria en Matrix Highway!':'El rival ganó esta vez';
+  document.getElementById('result-score').textContent=`${state.raceTime.toFixed(1)}s`;
+  document.getElementById('result-stats').innerHTML=`
+    <div class="r-stat"><div class="rv" style="color:var(--pink)">${win?200:60}</div><div class="rl">XP ganado</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--orange)">3/3</div><div class="rl">Vueltas</div></div>
+    <div class="r-stat"><div class="rv" style="color:var(--green)">${win?'+40':'+10'}</div><div class="rl">TM</div></div>
+  `;
+  showScreen('result');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+updateHUD();
+</script>
+</body>
+</html>
