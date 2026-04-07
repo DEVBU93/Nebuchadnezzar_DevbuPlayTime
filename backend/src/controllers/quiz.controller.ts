@@ -13,12 +13,12 @@ export const quizController = {
 
       const mission = await prisma.mission.findUnique({
         where: { id: missionId },
-        include: { questions: { orderBy: { order: 'asc' } } }
+        include: { questions: true }
       });
-      if (!mission) throw new AppError('Misión no encontrada', 404);
+      if (!mission) throw new AppError('Mision no encontrada', 404);
 
       const session = await prisma.quizSession.create({
-        data: { userId: req.user!.id, missionId, totalQuestions: mission.questions.length }
+        data: { userId: req.user!.id, missionId, answers: [] }
       });
 
       res.status(201).json({
@@ -35,7 +35,7 @@ export const quizController = {
 
   async submitAnswer(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { sessionId, questionId, answer } = req.body;
+      const { questionId, answer } = req.body;
       const question = await prisma.question.findUnique({ where: { id: questionId } });
       if (!question) throw new AppError('Pregunta no encontrada', 404);
 
@@ -43,9 +43,9 @@ export const quizController = {
       const pointsEarned = isCorrect ? question.points : 0;
 
       if (isCorrect) {
-        await prisma.userProgress.update({
+        await prisma.userProfile.update({
           where: { userId: req.user!.id },
-          data: { totalXp: { increment: pointsEarned } }
+          data: { xp: { increment: pointsEarned } }
         });
       }
 
@@ -55,10 +55,17 @@ export const quizController = {
 
   async completeSession(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { sessionId, score, correctAnswers } = req.body;
+      const { sessionId, score, correctCount, wrongCount, timeSpent } = req.body;
       const session = await prisma.quizSession.update({
         where: { id: sessionId },
-        data: { score, correctAnswers, completedAt: new Date(), status: 'COMPLETED' }
+        data: {
+          score: score ?? 0,
+          correctCount: correctCount ?? 0,
+          wrongCount: wrongCount ?? 0,
+          timeSpent: timeSpent ?? 0,
+          finishedAt: new Date(),
+          status: 'COMPLETED'
+        }
       });
       res.json({ success: true, data: session });
     } catch (e) { next(e); }
