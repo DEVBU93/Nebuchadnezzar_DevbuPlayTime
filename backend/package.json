@@ -1,7 +1,7 @@
 {
-  "name": "devbuplaytime-backend",
+  "name": "dpngame-backend",
   "version": "1.0.0",
-  "description": "DevBuPlaytime Backend API - Node.js + TypeScript + Express + Prisma",
+  "description": "DPNGAME Backend API - Node.js + TypeScript + Express + Prisma",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
