@@ -13,7 +13,7 @@ export function AuthLayout() {
       </div>
       <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-mauve mb-2">DevbuPlaytime</h1>
+          <h1 className="text-4xl font-bold text-mauve mb-2">DPNGAME</h1>
           <p className="text-subtext0">Aprende jugando. Crece conquistando.</p>
         </div>
         <Outlet />
