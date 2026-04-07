@@ -7,18 +7,18 @@ services:
   # ─── PostgreSQL ────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
-    container_name: devbuplaytime_postgres
+    container_name: dpngame_postgres
     environment:
       POSTGRES_USER: devbu_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: devbuplaytime
+      POSTGRES_DB: dpngame
     ports:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U devbu_user -d devbuplaytime']
+      test: ['CMD-SHELL', 'pg_isready -U devbu_user -d dpngame']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,9 +26,9 @@ services:
   # ─── pgAdmin (GUI para PostgreSQL) ──────────────────────────────
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: devbuplaytime_pgadmin
+    container_name: dpngame_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@devbuplaytime.com
+      PGADMIN_DEFAULT_EMAIL: admin@dpngame.com
       PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - '5050:80'
@@ -39,7 +39,7 @@ services:
 
 volumes:
   postgres_data:
-    name: devbuplaytime_postgres_data
+    name: dpngame_postgres_data
 
 # ─── Uso ────────────────────────────────────────────────────────────────────────────
 # Crea un .env en la raíz con: POSTGRES_PASSWORD=TuPasswordSeguro123!
