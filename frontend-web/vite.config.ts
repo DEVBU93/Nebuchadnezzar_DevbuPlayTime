@@ -20,4 +20,8 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true
   }
+  export default {
+  publicDir: 'public',
+  // resto del config...
+}
 });
