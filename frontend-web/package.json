@@ -1,5 +1,5 @@
 {
-  "name": "devbuplaytime-frontend",
+  "name": "dpngame-frontend",
   "version": "1.0.0",
   "description": "Dpngame Frontend - React 19 + TypeScript + Vite + TailwindCSS + Zustand",
   "private": true,
