@@ -2,10 +2,12 @@ import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 const navItems = [
+const navItems = [
   { path: '/', label: 'Inicio', icon: '🏠' },
   { path: '/worlds', label: 'Mundos', icon: '🌍' },
   { path: '/quiz', label: 'Quiz', icon: '❓' },
   { path: '/arena', label: 'Arena', icon: '⚔️' },
+  { path: '/master', label: 'Master V3 🗺️', icon: '📋' },  // Integra public/master.html
   { path: '/profile', label: 'Perfil', icon: '👤' }
 ];
 
@@ -19,7 +21,7 @@ export function MainLayout() {
       {/* Sidebar */}
       <aside className="w-64 bg-mantle border-r border-surface0 flex flex-col">
         <div className="p-6 border-b border-surface0">
-          <h1 className="text-xl font-bold text-mauve">DevbuPlaytime</h1>
+          <h1 className="text-xl font-bold text-mauve">Dpngame</h1>
           <p className="text-xs text-subtext0 mt-1">v1.0.0 — by DEVBU93</p>
         </div>
         <nav className="flex-1 p-4 space-y-1">
