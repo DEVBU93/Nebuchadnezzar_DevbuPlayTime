@@ -66,9 +66,6 @@ export default function App() {
           <Route path="/register" element={<Navigate to="/auth/register" replace />} />
           {/* 404 */}
           <Route path="*" element={<NotFoundPage />} />
-          {/*NAVBAR*/}
-          <a href="/mapa.html" className="link-nav">🗺️ Mapa Interactivo</a>
-          <a href="/game-demo.html" className="link-nav">🎮 Demo Completa</a>
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
