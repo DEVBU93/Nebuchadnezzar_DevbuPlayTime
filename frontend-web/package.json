@@ -1,7 +1,7 @@
 {
   "name": "devbuplaytime-frontend",
   "version": "1.0.0",
-  "description": "DevBuPlaytime Frontend - React 19 + TypeScript + Vite + TailwindCSS + Zustand",
+  "description": "Dpngame Frontend - React 19 + TypeScript + Vite + TailwindCSS + Zustand",
   "private": true,
   "scripts": {
     "dev": "vite",
