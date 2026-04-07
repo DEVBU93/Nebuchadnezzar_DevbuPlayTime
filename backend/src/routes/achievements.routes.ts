@@ -6,6 +6,7 @@ import { AuthRequest } from '../middlewares/auth.middleware';
 const router = Router();
 const prisma = new PrismaClient();
 
+// GET /api/achievements - list all achievements
 router.get('/', async (_req, res, next) => {
   try {
     const achievements = await prisma.achievement.findMany();
@@ -13,13 +14,14 @@ router.get('/', async (_req, res, next) => {
   } catch (e) { next(e); }
 });
 
+// GET /api/achievements/me - get current user's unlocked achievements
 router.get('/me', authenticate, async (req: AuthRequest, res, next) => {
   try {
-    const userAchievements = await prisma.userProgress.findUnique({
+    const userAchievements = await prisma.userAchievement.findMany({
       where: { userId: req.user!.id },
-      include: { achievements: true }
+      include: { achievement: true }
     });
-    res.json({ success: true, data: userAchievements?.achievements || [] });
+    res.json({ success: true, data: userAchievements });
   } catch (e) { next(e); }
 });
 
