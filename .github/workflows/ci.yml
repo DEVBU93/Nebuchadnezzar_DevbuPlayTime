@@ -4,7 +4,7 @@
 # Steps: install → lint → test + coverage → build
 # ============================================================
 
-name: DevbuPlaytime CI
+name: DPNGAME CI
 
 on:
   push:
