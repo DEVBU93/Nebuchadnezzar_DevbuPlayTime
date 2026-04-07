@@ -14,23 +14,28 @@ export const usersService = {
     return safe;
   },
 
-  async updateProfile(userId: string, data: { displayName?: string; bio?: string; avatarUrl?: string }) {
-    return prisma.user.update({
-      where: { id: userId },
-      data: {
+  async updateProfile(userId: string, data: { displayName?: string; bio?: string; avatar?: string }) {
+    return prisma.userProfile.upsert({
+      where: { userId },
+      update: {
         displayName: data.displayName,
-        avatarUrl: data.avatarUrl,
-        profile: { update: { bio: data.bio } }
+        avatar: data.avatar,
+        bio: data.bio
       },
-      select: { id: true, username: true, email: true, displayName: true, avatarUrl: true }
+      create: {
+        userId,
+        displayName: data.displayName,
+        avatar: data.avatar,
+        bio: data.bio
+      }
     });
   },
 
   async getLeaderboard(limit = 10) {
     return prisma.userProgress.findMany({
       take: limit,
-      orderBy: { totalXp: 'desc' },
-      include: { user: { select: { id: true, username: true, displayName: true, avatarUrl: true } } }
+      orderBy: { score: 'desc' },
+      include: { user: { select: { id: true, username: true, email: true } } }
     });
   },
 
