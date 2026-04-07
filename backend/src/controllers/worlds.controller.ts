@@ -23,7 +23,7 @@ export const worldsController = {
         where: { id: req.params.id },
         include: {
           chapters: {
-            include: { missions: { include: { questions: { orderBy: { order: 'asc' } } } } },
+            include: { missions: { include: { questions: true } } },
             orderBy: { order: 'asc' }
           }
         }
