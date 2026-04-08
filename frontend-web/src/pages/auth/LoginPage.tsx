@@ -21,14 +21,6 @@ export default function LoginPage() {
       alert('Login falló: ' + error.message);
     }
   };
-
-  return (
-    <div>
-      <input value={email} onChange={e => setEmail(e.target.value)} />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
-      <button onClick={handleLogin}>Login</button>
-    </div>
-  );
 }
 
   const handleSubmit = async (e: React.FormEvent) => {
