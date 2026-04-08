@@ -91,13 +91,6 @@ const startQuiz = async (missionId: string) => {
   });
 };
 
-const submitAnswer = async (sessionId: string, questionId: string, answer: string) => {
-  return apiFetch(`/quiz/sessions/${sessionId}/answer`, {
-    method: 'POST',
-    body: JSON.stringify({ questionId, answer })
-  });
-};
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
