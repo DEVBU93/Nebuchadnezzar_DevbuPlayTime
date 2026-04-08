@@ -30,6 +30,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? <>{children}</> : <Navigate to="/auth/login" replace />;
