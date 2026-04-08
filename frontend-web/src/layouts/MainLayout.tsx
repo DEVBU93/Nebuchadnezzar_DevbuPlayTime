@@ -2,7 +2,6 @@ import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 const navItems = [
-const navItems = [
   { path: '/', label: 'Inicio', icon: '🏠' },
   { path: '/worlds', label: 'Mundos', icon: '🌍' },
   { path: '/quiz', label: 'Quiz', icon: '❓' },
