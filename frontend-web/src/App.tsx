@@ -68,20 +68,6 @@ export const submitAnswer = async (sessionId: string, questionId: string, answer
     body: JSON.stringify({ questionId, answer })
   });
 };
-// Función helper para todas las llamadas API
-const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `${apiUrl}${endpoint}`;
-  const token = localStorage.getItem('token');
-  
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers
-    }
-  });
-};
 
 // Ejemplos de uso en tus hooks o componentes
 const startQuiz = async (missionId: string) => {
