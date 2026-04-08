@@ -21,6 +21,41 @@ import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
 import { AchievementsPage } from './pages/achievements/AchievementsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
+// Al inicio del archivo, antes de cualquier componente
+const apiUrl = import.meta.env.VITE_API_URL || 
+               import.meta.env.VITE_API_URL_DEV || 
+               'http://localhost:3000';
+
+// Función helper para todas las llamadas API
+const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
+  const url = `${apiUrl}${endpoint}`;
+  const token = localStorage.getItem('token');
+  
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers
+    }
+  });
+};
+
+// Ejemplos de uso en tus hooks o componentes
+const startQuiz = async (missionId: string) => {
+  return apiFetch('/quiz/sessions/start', {
+    method: 'POST',
+    body: JSON.stringify({ missionId })
+  });
+};
+
+const submitAnswer = async (sessionId: string, questionId: string, answer: string) => {
+  return apiFetch(`/quiz/sessions/${sessionId}/answer`, {
+    method: 'POST',
+    body: JSON.stringify({ questionId, answer })
+  });
+};
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -29,8 +64,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
