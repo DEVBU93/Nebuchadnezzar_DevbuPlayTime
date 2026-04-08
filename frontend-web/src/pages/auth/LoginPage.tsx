@@ -21,7 +21,7 @@ export default function LoginPage() {
       alert('Login falló: ' + error.message);
     }
   };
-}
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
