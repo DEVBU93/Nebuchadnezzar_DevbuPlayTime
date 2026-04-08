@@ -24,7 +24,6 @@ export const quizController = {
 
       if (!mission) throw new AppError('Misión no encontrada', 404);
 
-      // Crear la sesión en la base de datos
       const session = await prisma.quizSession.create({
         data: {
           userId,
@@ -69,20 +68,21 @@ export const quizController = {
       if (!sessionId || !questionId) {
         throw new AppError('sessionId y questionId son requeridos', 400);
       }
-      // Obtener misión relacionada por separado
-      const mission = await prisma.mission.findUnique({
-        where: { id: session.missionId }
-      })
-      
-      // Calcular recompensas
-      const xpGained = mission?.xpReward ?? 0
-      const coinsGained = Math.floor((session.score / 100) * (mission?.coinReward ?? 0))
-      // Validar que la sesión existe y pertenece al usuario
+
+      // ✅ FIX: session se declara PRIMERO
       const session = await prisma.quizSession.findFirst({
         where: { id: sessionId, userId, status: 'ACTIVE' }
       });
 
       if (!session) throw new AppError('Sesión no válida o ya finalizada', 403);
+
+      // ✅ FIX: mission se busca DESPUÉS de tener session.missionId
+      const mission = await prisma.mission.findUnique({
+        where: { id: session.missionId }
+      });
+
+      const xpGained = mission?.xpReward ?? 0;
+      const coinsGained = Math.floor((session.score / 100) * (mission?.coinReward ?? 0));
 
       // Obtener la pregunta y validar respuesta
       const question = await prisma.question.findUnique({ where: { id: questionId } });
@@ -91,9 +91,11 @@ export const quizController = {
       const isCorrect = String(question.correctAnswer).trim().toLowerCase() === String(answer).trim().toLowerCase();
       const pointsEarned = isCorrect ? question.points : 0;
 
-      // Actualizar el array de respuestas en la sesión (usando un cast a any para manejar Json de Prisma)
       const currentAnswers = (session.answers as any[]) || [];
-      const updatedAnswers = [...currentAnswers, { questionId, answer, isCorrect, pointsEarned, timestamp: new Date() }];
+      const updatedAnswers = [
+        ...currentAnswers,
+        { questionId, answer, isCorrect, pointsEarned, timestamp: new Date() }
+      ];
 
       await prisma.quizSession.update({
         where: { id: sessionId },
@@ -133,11 +135,14 @@ export const quizController = {
 
       if (!session) throw new AppError('Sesión no encontrada o ya procesada', 404);
 
-      // Calcular recompensas (XP y Coins de la misión)
-      const xpReward = session.mission.xpReward || 0;
-      const coinReward = session.mission.coinReward || 0;
+      // ✅ FIX: query separada para obtener la misión — session.mission no existe
+      const mission = await prisma.mission.findUnique({
+        where: { id: session.missionId }
+      });
 
-      // Actualizar sesión a COMPLETED
+      const xpReward = mission?.xpReward ?? 0;
+      const coinReward = mission?.coinReward ?? 0;
+
       const updatedSession = await prisma.quizSession.update({
         where: { id: sessionId },
         data: {
@@ -146,7 +151,6 @@ export const quizController = {
         }
       });
 
-      // Actualizar perfil del usuario con las recompensas
       const updatedProfile = await prisma.userProfile.update({
         where: { userId },
         data: {
@@ -155,7 +159,6 @@ export const quizController = {
         }
       });
 
-      // Registrar progreso del usuario en la misión
       await prisma.userProgress.upsert({
         where: { userId_missionId: { userId, missionId: session.missionId } },
         update: {
