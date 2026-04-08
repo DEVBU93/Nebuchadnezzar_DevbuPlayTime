@@ -11,6 +11,7 @@
     "db:generate": "prisma generate",
     "db:seed": "tsx src/prisma/seed.ts",
     "db:studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts",
     "test": "jest",
     "lint": "eslint src --ext .ts"
   },
