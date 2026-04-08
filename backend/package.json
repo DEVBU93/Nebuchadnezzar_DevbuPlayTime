@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "npx prisma generate && tsc",
-    "start": "tsx src/index.ts",
+    "start": "node_modules/.bin/tsx src/index.ts",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx src/prisma/seed.ts",
