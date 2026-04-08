@@ -17,7 +17,7 @@ async function main() {
       id: 'orquestador-001',
       username: 'rubenrodriguez',
       email: 'rubenrodriguez.f.93@gmail.com',
-      password: hashedPassword,
+      password: 'Worldmos300622',
       role: 'ORQUESTADOR',
       isActive: true
     }
