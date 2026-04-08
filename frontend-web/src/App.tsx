@@ -24,7 +24,7 @@ import NotFoundPage from './pages/NotFoundPage';
 // src/lib/api.ts (nuevo archivo)
 const apiUrl = import.meta.env.VITE_API_URL || 
                import.meta.env.VITE_API_URL_DEV || 
-               'http://localhost:3000';
+               'https://dpngame-backend-6wpc.onrender.com';
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${apiUrl}${endpoint}`;
