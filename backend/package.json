@@ -51,7 +51,13 @@
     "tsx": "^4.7.1",
     "typescript": "^5.3.3"
   },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "npx prisma generate"
+  },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
   }
 }
