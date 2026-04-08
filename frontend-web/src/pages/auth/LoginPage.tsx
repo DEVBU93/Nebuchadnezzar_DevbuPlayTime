@@ -2,12 +2,34 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import toast from 'react-hot-toast';
+import { login } from '../../lib/api'; // ← Importar aquí
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('rubenrodriguez.f.93@gmail.com');
+  const [password, setPassword] = useState('Admin123!');
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate();
+
+    const handleLogin = async () => {
+    try {
+      const data = await login(email, password); // ← Usar aquí
+      localStorage.setItem('token', data.token);
+      window.location.href = '/';
+    } catch (error) {
+      alert('Login falló: ' + error.message);
+    }
+  };
+
+  return (
+    <div>
+      <input value={email} onChange={e => setEmail(e.target.value)} />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} />
+      <button onClick={handleLogin}>Login</button>
+    </div>
+  );
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
