@@ -3,7 +3,7 @@ services:
     name: dpngame-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install --production=false && npx prisma generate
+    buildCommand: npm install && npm run build
     preDeployCommand: npx prisma migrate deploy
     startCommand: npm start
     envVars:
