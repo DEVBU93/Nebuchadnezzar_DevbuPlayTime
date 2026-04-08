@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: dpngame-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install --production=false && npx prisma generate
+    preDeployCommand: npx prisma migrate deploy
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dpngame-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        value: https://dpngame.worldmos.es,https://dpngame.worldmos.world,https://dpngame.worldmos.net
+    healthCheckPath: /health
+
+databases:
+  - name: dpngame-db
+    plan: free
+    databaseName: dpngame
+    user: dpngame_user
