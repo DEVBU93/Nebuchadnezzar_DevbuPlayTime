@@ -26,49 +26,6 @@ const apiUrl = import.meta.env.VITE_API_URL ||
                import.meta.env.VITE_API_URL_DEV || 
                'https://dpngame-backend-6wpc.onrender.com';
 
-export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `${apiUrl}${endpoint}`;
-  const token = localStorage.getItem('token');
-  
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`);
-  }
-  
-  return response.json();
-};
-
-// Login function
-export const login = async (email: string, password: string) => {
-  return apiFetch('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password })
-  });
-};
-
-// Quiz functions
-export const startSession = async (missionId: string) => {
-  return apiFetch('/quiz/sessions/start', {
-    method: 'POST',
-    body: JSON.stringify({ missionId })
-  });
-};
-
-export const submitAnswer = async (sessionId: string, questionId: string, answer: string) => {
-  return apiFetch(`/quiz/sessions/${sessionId}/answer`, {
-    method: 'POST',
-    body: JSON.stringify({ questionId, answer })
-  });
-};
-
 // Ejemplos de uso en tus hooks o componentes
 const startQuiz = async (missionId: string) => {
   return apiFetch('/quiz/sessions/start', {
