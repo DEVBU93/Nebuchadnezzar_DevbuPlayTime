@@ -10,6 +10,7 @@ export interface AuthRequest extends Request {
   user?: { id: string; username: string; email: string; role: string };
 }
 
+// ── authenticate ─────────────────────────────────────────────
 export const authenticate = async (
   req: AuthRequest,
   res: Response,
@@ -44,6 +45,7 @@ export const authenticate = async (
   }
 };
 
+// ── authorize ────────────────────────────────────────────────
 export const authorize = (...roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction): void => {
     if (!req.user || !roles.includes(req.user.role)) {
@@ -52,38 +54,4 @@ export const authorize = (...roles: string[]) => {
     }
     next();
   };
-  
-  export const authMiddleware = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    // ✅ FIX: headers viene de Request — ya disponible al extender correctamente
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new AppError('Token no proporcionado', 401);
-    }
-
-    const token = authHeader.split(' ')[1];
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      throw new AppError('JWT_SECRET no configurado', 500);
-    }
-
-    const decoded = jwt.verify(token, secret) as {
-      id: string;
-      email: string;
-      role: string;
-    };
-
-    req.user = decoded;
-    next();
-  } catch (e) {
-    if (e instanceof AppError) return next(e);
-    next(new AppError('Token inválido o expirado', 401));
-  }
-};
 };
