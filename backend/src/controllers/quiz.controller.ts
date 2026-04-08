@@ -69,7 +69,14 @@ export const quizController = {
       if (!sessionId || !questionId) {
         throw new AppError('sessionId y questionId son requeridos', 400);
       }
-
+      // Obtener misión relacionada por separado
+      const mission = await prisma.mission.findUnique({
+        where: { id: session.missionId }
+      })
+      
+      // Calcular recompensas
+      const xpGained = mission?.xpReward ?? 0
+      const coinsGained = Math.floor((session.score / 100) * (mission?.coinReward ?? 0))
       // Validar que la sesión existe y pertenece al usuario
       const session = await prisma.quizSession.findFirst({
         where: { id: sessionId, userId, status: 'ACTIVE' }
@@ -121,8 +128,7 @@ export const quizController = {
       const userId = req.user!.id;
 
       const session = await prisma.quizSession.findFirst({
-        where: { id: sessionId, userId, status: 'ACTIVE' },
-        include: { mission: true }
+        where: { id: sessionId, userId, status: 'ACTIVE' }
       });
 
       if (!session) throw new AppError('Sesión no encontrada o ya procesada', 404);
