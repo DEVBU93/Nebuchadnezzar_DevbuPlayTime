@@ -3,9 +3,6 @@ services:
     name: dpngame-backend
     runtime: node
     rootDir: backend
-    buildCommand: npm install && npm install tsx && npx prisma generate
-    preDeployCommand: npx prisma migrate deploy
-    startCommand: node_modules/.bin/tsx src/index.ts
     envVars:
       - key: NODE_ENV
         value: production
