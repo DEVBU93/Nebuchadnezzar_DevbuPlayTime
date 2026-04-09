@@ -1,5 +1,64 @@
 # 🎮 DPN-Game
 
+> **Version 1.0.0** | Estado: PRODUCTION READY
+
+---
+
+## URLs de Produccion
+
+| Servicio | URL | Estado |
+|----------|-----|--------|
+| Frontend (.es) | https://dpngame.worldmos.es | Vercel |
+| Frontend Vercel | https://dpn-game.vercel.app | Vercel |
+| Backend API | https://dpngame-backend.onrender.com | Render |
+| Health Check | https://dpngame-backend.onrender.com/health | Render |
+
+## Variables de Entorno Requeridas
+
+### Backend (Render)
+```
+NODE_ENV=production
+DATABASE_URL=<PostgreSQL connection string>
+JWT_SECRET=<secret aleatorio seguro>
+JWT_REFRESH_SECRET=<otro secret aleatorio>
+FRONTEND_URL=https://dpngame.worldmos.es
+CORS_ORIGIN=https://dpngame.worldmos.es,https://dpn-game.vercel.app,https://dpngame.worldmos.net,...
+PORT=10000
+```
+
+### Frontend (Vercel)
+```
+VITE_API_URL=https://dpngame-backend.onrender.com
+```
+
+## Setup Local
+
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/DEVBU93/DPN-Game.git
+cd DPN-Game
+
+# 2. Backend
+cd backend
+cp .env.example .env   # rellenar variables
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+
+# 3. Frontend (nueva terminal)
+cd frontend-web
+cp .env.example .env.local  # ajustar VITE_API_URL
+npm install
+npm run dev
+```
+
+## Arquitectura de Dominios
+
+Ver [docs/domains.md](./docs/domains.md) para la arquitectura completa de dominios multi-extension.
+
+
+
 > Plataforma gamificada La Manada. Quiz, arena PvP y sistema de progresión completo.
 
 ![Stack](https://img.shields.io/badge/Node.js-22-green) ![Stack](https://img.shields.io/badge/React-19-blue) ![Stack](https://img.shields.io/badge/TypeScript-5.3-blue) ![Stack](https://img.shields.io/badge/Prisma-5-purple) ![License](https://img.shields.io/badge/license-MIT-green)
