@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './stores/authStore';
 import { MainLayout } from './layouts/MainLayout';
 import { AuthLayout } from './layouts/AuthLayout';
+
 // ---- Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -20,19 +21,6 @@ import { ShopPage } from './pages/shop/ShopPage';
 import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage';
 import { AchievementsPage } from './pages/achievements/AchievementsPage';
 import NotFoundPage from './pages/NotFoundPage';
-
-// src/lib/api.ts (nuevo archivo)
-const apiUrl = import.meta.env.VITE_API_URL || 
-               import.meta.env.VITE_API_URL_DEV || 
-               'https://dpngame-backend-6wpc.onrender.com';
-
-// Ejemplos de uso en tus hooks o componentes
-const startQuiz = async (missionId: string) => {
-  return apiFetch('/quiz/sessions/start', {
-    method: 'POST',
-    body: JSON.stringify({ missionId })
-  });
-};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,25 +47,30 @@ export default function App() {
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />
           </Route>
+
           {/* Protected routes */}
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-            <Route path="/worlds" element={<ProtectedRoute><WorldsPage /></ProtectedRoute>} />
-            <Route path="/worlds/:worldId" element={<ProtectedRoute><WorldDetailPage /></ProtectedRoute>} />
-            <Route path="/worlds/:worldId/chapters" element={<ProtectedRoute><ChaptersPage /></ProtectedRoute>} />
-            <Route path="/missions/:missionId" element={<ProtectedRoute><MissionPage /></ProtectedRoute>} />
-            <Route path="/quiz/:missionId" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
-            <Route path="/arena" element={<ProtectedRoute><ArenaPage /></ProtectedRoute>} />
-            <Route path="/arena/:roomId" element={<ProtectedRoute><ArenaRoomPage /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/shop" element={<ProtectedRoute><ShopPage /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
-            <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<HomePage />} />
+            <Route path="/worlds" element={<WorldsPage />} />
+            <Route path="/worlds/:worldId" element={<WorldDetailPage />} />
+            <Route path="/worlds/:worldId/chapters" element={<ChaptersPage />} />
+            <Route path="/missions/:missionId" element={<MissionPage />} />
+            <Route path="/quiz/:missionId" element={<QuizPage />} />
+            <Route path="/arena" element={<ArenaPage />} />
+            <Route path="/arena/:roomId" element={<ArenaRoomPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
           </Route>
-          {/* Redirect /login and /register to /auth routes for backward compat */}
-          <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-          <Route path="/register" element={<Navigate to="/auth/register" replace />} />
-          {/* 404 */}
+
+          {/* Fallback */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
