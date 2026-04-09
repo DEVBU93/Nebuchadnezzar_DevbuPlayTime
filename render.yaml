@@ -3,6 +3,8 @@ services:
     name: dpngame-backend
     runtime: node
     rootDir: backend
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: node dist/index.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,8 +16,16 @@ services:
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        value: https://dpngame.worldmos.es
       - key: CORS_ORIGIN
-        value: https://dpngame.worldmos.es,https://dpngame.worldmos.world,https://dpngame.worldmos.net
+        value: https://dpngame.worldmos.es,https://dpngame.worldmos.net,https://dpngame.worldmos.shop,https://dpngame.worldmos.info,https://dpngame.worldmos.online,https://dpngame.worldmos.world,https://dpn-game.vercel.app,http://localhost:5173
+      - key: LOG_LEVEL
+        value: info
     healthCheckPath: /health
 
 databases:
