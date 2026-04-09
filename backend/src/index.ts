@@ -24,11 +24,16 @@ import { setupSocketHandlers } from './socket/socketHandler';
 
 dotenv.config();
 
+// Validate required env vars - warn but don't crash if missing in dev
 const requiredEnvVars = ['JWT_SECRET', 'DATABASE_URL'];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    logger.error(`Variable de entorno ${envVar} no configurada. El servidor no puede arrancar.`);
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production') {
+      logger.error(`Variable de entorno ${envVar} no configurada. El servidor no puede arrancar.`);
+      process.exit(1);
+    } else {
+      logger.warn(`Variable de entorno ${envVar} no configurada. Usando valor de desarrollo.`);
+    }
   }
 }
 
@@ -36,9 +41,23 @@ const app = express();
 const httpServer = createServer(app);
 const isDev = process.env.NODE_ENV !== 'production';
 
+// Build allowed origins list from CORS_ORIGIN env var (comma-separated)
+const allowedOrigins: string[] = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : [
+      'https://dpngame.worldmos.es',
+      'https://dpngame.worldmos.net',
+      'https://dpngame.worldmos.shop',
+      'https://dpngame.worldmos.info',
+      'https://dpngame.worldmos.online',
+      'https://dpngame.worldmos.world',
+      'https://dpn-game.vercel.app',
+      'http://localhost:5173',
+    ];
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'https://dpngame.worldmos.es',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -47,16 +66,23 @@ const io = new Server(httpServer, {
 const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
-app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'https://dpngame.worldmos.es',
-    'http://localhost:5173',
-    'https://dpngame-backend.onrender.com'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Authorization', 'Content-Type', 'Accept'],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, curl, etc.)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked request from origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'Accept'],
+    credentials: true,
+  })
+);
 app.use(compression());
 app.use(morgan(isDev ? 'dev' : 'combined'));
 app.use(express.json({ limit: '1mb' }));
@@ -109,6 +135,7 @@ setupSocketHandlers(io);
 httpServer.listen(PORT, () => {
   logger.info(`DPNGAME API running on port ${PORT}`);
   logger.info(`Health check: http://localhost:${PORT}/health`);
+  logger.info(`Allowed origins: ${allowedOrigins.join(', ')}`);
 });
 
 export { app, io };
