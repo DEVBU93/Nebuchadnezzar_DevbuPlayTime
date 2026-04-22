@@ -5,7 +5,6 @@
 # ============================================================
 
 name: DPNGAME CI
-
 on:
   push:
     branches: [main]
@@ -16,14 +15,13 @@ jobs:
   build-and-test:
     name: Build & Test (Node.js 20)
     runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER:     devbu
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          POSTGRES_DB:       devbudb_test
+          POSTGRES_USER: devbu
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD || 'ci_test_pass' }}
+          POSTGRES_DB: devbudb_test
         ports:
           - 5432:5432
         options: >-
@@ -31,46 +29,30 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-
     env:
-      NODE_ENV:     test
-      DATABASE_URL: postgresql://devbu:${{ secrets.DB_PASSWORD }}@localhost:5432/devbudb_test
-      JWT_SECRET:   ${{ secrets.JWT_SECRET }}
-
+      NODE_ENV: test
+      DATABASE_URL: postgresql://devbu:${{ secrets.DB_PASSWORD || 'ci_test_pass' }}@localhost:5432/devbudb_test
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci_test_jwt_secret_worldmos_2026' }}
     steps:
       - uses: actions/checkout@v6
-
       - name: Setup Node.js 20
         uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: npm
           cache-dependency-path: backend/package-lock.json
-
       - name: Install dependencies
         run: npm ci
         working-directory: backend
-
       - name: Generate Prisma client
         run: npx prisma generate
         working-directory: backend
-
       - name: Run migrations (test DB)
         run: npx prisma migrate deploy
         working-directory: backend
-
       - name: Run tests with coverage
         run: npx jest --coverage --coverageReporters=text --coverageReporters=lcov --passWithNoTests
         working-directory: backend
-
       - name: Build TypeScript
-        run: npm run build
+        run: npx tsc --noEmit
         working-directory: backend
-
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-devbu
-          path: backend/coverage/
-          retention-days: 14
